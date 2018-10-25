@@ -23,5 +23,5 @@ script:
     sdk/tools/bin/sdkmanager "build-tools;27.0.3"
   - |
     export ANDROID_HOME="$PWD/sdk"
-    export PATH="$ANDROID_HOME/build_tools/27.0.3:$PATH"
+    export PATH="$ANDROID_HOME/build-tools/27.0.3:$PATH"
     bundle exec rspec spec
