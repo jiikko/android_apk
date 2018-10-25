@@ -3,16 +3,18 @@ defaults: &defaults
   docker:
     - image: circleci/android:api-26-alpha
 
-rspec:
-  - restore_cache: &restore_gradle_cache
-      keys: 
-        - bundle-v1-{{ checksum "Gemfile.lock" }}
-  - run: bundle install --clean --path=vendor/bundle
-  - save_cache:
-      paths:
-        - vendor/bundle
-      key: bundle-v1-{{ checksum "Gemfile.lock" }}
-  - run: bundle exec rspec spec
+version: 2
+jobs:
+  rspec:
+    - restore_cache: &restore_gradle_cache
+        keys: 
+          - bundle-v1-{{ checksum "Gemfile.lock" }}
+    - run: bundle install --clean --path=vendor/bundle
+    - save_cache:
+        paths:
+          - vendor/bundle
+        key: bundle-v1-{{ checksum "Gemfile.lock" }}
+    - run: bundle exec rspec spec
 
 workflows:
   version: 2
