@@ -8,6 +8,7 @@ jobs:
   rspec:
     <<: *defaults
     steps:
+      - checkout
       - restore_cache: &restore_gradle_cache
           keys: 
             - bundle-v1-{{ checksum "Gemfile.lock" }}
