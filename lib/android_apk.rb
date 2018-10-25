@@ -81,13 +81,25 @@ class AndroidApk
     end
   end
 
+  def installable?
+    # TODO: add not testable
+    signed?
+  end
+
+  def signed?
+    !signature.nil?
+  end
+
   def signature
-    command = "unzip -p #{self.filepath.shellescape} META-INF/*.RSA META-INF/*.DSA | keytool -printcert | grep SHA1:"
-    output, _, status = Open3.capture3(command)
-    return if status != 0 || output.nil? || !output.index('SHA1:')
-    val = output.scan(/(?:[0-9A-Z]{2}:?){20}/)
-    return nil if val.nil? || val.length != 1
-    return val[0].gsub(/:/, "").downcase
+    return @signature if defined? @signature
+    @signature = -> {
+      command = "unzip -p #{self.filepath.shellescape} META-INF/*.RSA META-INF/*.DSA | keytool -printcert | grep SHA1:"
+      output, _, status = Open3.capture3(command)
+      return if status != 0 || output.nil? || !output.index('SHA1:')
+      val = output.scan(/(?:[0-9A-Z]{2}:?){20}/)
+      return nil if val.nil? || val.length != 1
+      return val[0].gsub(/:/, "").downcase
+    }.call
   end
 
   # workaround for https://code.google.com/p/android/issues/detail?id=160847

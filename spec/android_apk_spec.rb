@@ -5,6 +5,7 @@ require "pp"
 describe "AndroidApk" do
   apk = nil  
   apk2 = nil
+  apk3 = nil
   icon_not_set_apk = nil
 
   mockdir                         = File.join(File.dirname(__FILE__), 'mock')
@@ -17,11 +18,13 @@ describe "AndroidApk" do
   vector_file_path                = File.join(mockdir, 'vector-icon.apk')
   vector_v26_file_path            = File.join(mockdir, 'vector-icon-v26.apk')
   multi_application_tag_file_path = File.join(mockdir, 'multi_application_tag.apk')
+  unsigned_file_path              = File.join(mockdir, 'app-release-unsigned.apk')
 
   it "Sample apk file exist" do
     File.exist?(sample_file_path).should == true
     File.exist?(sample2_file_path).should == true
     File.exist?(sample_space_file_path).should == true
+    File.exist?(unsigned_file_path).should == true
   end
 
   it "Library can not read apk file" do
@@ -39,6 +42,8 @@ describe "AndroidApk" do
     apk.should_not == nil
     apk2 = AndroidApk.analyze(sample2_file_path)
     apk2.should_not == nil
+    apk3 = AndroidApk.analyze(unsigned_file_path)
+    apk3.should_not == nil
   end
 
   it "Can read apk information" do
@@ -53,8 +58,18 @@ describe "AndroidApk" do
     apk.labels['ja'].should == 'サンプル'
   end
 
+  it "Can detect signed" do
+    apk.signed?.should == true
+    apk2.signed?.should == true
+    apk3.signed?.should == false
+  end
+
   it "Can read signature" do
     apk.signature.should == "c1f285f69cc02a397135ed182aa79af53d5d20a1"
+  end
+
+  it "Can read apk3 signature" do
+    apk3.signature.should == nil
   end
 
   it "Icon file unzip" do
@@ -147,6 +162,19 @@ describe "AndroidApk" do
       expect {
         AndroidApk.analyze(vector_file_path)
       }.not_to raise_error
+    end
+  end
+
+  context 'check all apk installable?' do
+    it do
+      AndroidApk.analyze(sample_file_path).installable?.should == true
+      AndroidApk.analyze(sample2_file_path).installable?.should == true
+      AndroidApk.analyze(sample_space_file_path).installable?.should == true
+      AndroidApk.analyze(icon_not_set_file_path).installable?.should == true
+      AndroidApk.analyze(dsa_file_path).installable?.should == true
+      AndroidApk.analyze(vector_file_path).installable?.should == true
+      AndroidApk.analyze(vector_v26_file_path).installable?.should == true
+      AndroidApk.analyze(unsigned_file_path).installable?.should == false
     end
   end
 end
