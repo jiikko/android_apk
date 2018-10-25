@@ -54,3 +54,5 @@ pkg
 
 # OSX
 .DS_Store
+
+vendor/bundle
