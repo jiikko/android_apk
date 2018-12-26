@@ -22,10 +22,10 @@ describe "AndroidApk" do
   unsigned_file_path = File.join(mockdir, "app-release-unsigned.apk")
 
   it "Sample apk file exist" do
-    File.exist?(sample_file_path).should == true
-    File.exist?(sample2_file_path).should == true
-    File.exist?(sample_space_file_path).should == true
-    File.exist?(unsigned_file_path).should == true
+    expect(File.exist?(sample_file_path)).to be_truthy
+    expect(File.exist?(sample2_file_path)).to be_truthy
+    expect(File.exist?(sample_space_file_path)).to be_truthy
+    expect(File.exist?(unsigned_file_path)).to be_truthy
   end
 
   it "Library can not read apk file" do
@@ -66,17 +66,17 @@ describe "AndroidApk" do
   end
 
   it "Can read signature" do
-    apk.signature.should == "c1f285f69cc02a397135ed182aa79af53d5d20a1"
+    expect(apk.signature).to eq("c1f285f69cc02a397135ed182aa79af53d5d20a1")
   end
 
   it "Can read apk3 signature" do
-    apk3.signature.should.nil?
+    expect(apk3.signature).to be_nil
   end
 
   it "Icon file unzip" do
-    apk.icons.length.should == 3
-    apk.icon_file.should_not.nil?
-    apk.icon_file(apk.icons.keys[0]).should_not.nil?
+    expect(apk.icons.length).to eq(3)
+    expect(apk.icon_file).not_to be_nil
+    expect(apk.icon_file(apk.icons.keys[0])).not_to be_nil
   end
 
   it "Can read apk information 2" do
@@ -101,7 +101,7 @@ describe "AndroidApk" do
   end
 
   it "Can read signature 2" do
-    apk2.signature.should == "e460df681d330f93f92e712cd79985d99379f5e0"
+    expect(apk2.signature).to eq("e460df681d330f93f92e712cd79985d99379f5e0")
   end
 
   it "If icon has not set returns nil" do
@@ -154,28 +154,24 @@ describe "AndroidApk" do
 
   context "multi application tag error" do
     it "should raise error" do
-      expect do
-        AndroidApk.analyze(multi_application_tag_file_path)
-      end.to raise_error AndroidApk::AndroidManifestValidateError
+      expect { AndroidApk.analyze(multi_application_tag_file_path) }.to raise_error(AndroidApk::AndroidManifestValidateError)
     end
 
     it "not raise error" do
-      expect do
-        AndroidApk.analyze(vector_file_path)
-      end.not_to raise_error
+      expect { AndroidApk.analyze(vector_file_path) }.not_to raise_error
     end
   end
 
   context "check all apk installable?" do
     it do
-      AndroidApk.analyze(sample_file_path).installable?.should == true
-      AndroidApk.analyze(sample2_file_path).installable?.should == true
-      AndroidApk.analyze(sample_space_file_path).installable?.should == true
-      AndroidApk.analyze(icon_not_set_file_path).installable?.should == true
-      AndroidApk.analyze(dsa_file_path).installable?.should == true
-      AndroidApk.analyze(vector_file_path).installable?.should == true
-      AndroidApk.analyze(vector_v26_file_path).installable?.should == true
-      AndroidApk.analyze(unsigned_file_path).installable?.should == false
+      expect(AndroidApk.analyze(sample_file_path).installable?).to be_truthy
+      expect(AndroidApk.analyze(sample2_file_path).installable?).to be_truthy
+      expect(AndroidApk.analyze(sample_space_file_path).installable?).to be_truthy
+      expect(AndroidApk.analyze(icon_not_set_file_path).installable?).to be_truthy
+      expect(AndroidApk.analyze(dsa_file_path).installable?).to be_truthy
+      expect(AndroidApk.analyze(vector_file_path).installable?).to be_truthy
+      expect(AndroidApk.analyze(vector_v26_file_path).installable?).to be_truthy
+      expect(AndroidApk.analyze(unsigned_file_path).installable?).to be_falsey
     end
   end
 end
