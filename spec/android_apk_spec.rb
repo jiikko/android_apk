@@ -9,17 +9,17 @@ describe "AndroidApk" do
   apk3 = nil
   icon_not_set_apk = nil
 
-  mockdir                         = File.join(File.dirname(__FILE__), "mock")
-  sample_file_path                = File.join(mockdir, "sample.apk")
-  sample2_file_path               = File.join(mockdir, "BarcodeScanner4.2.apk")
-  sample_space_file_path          = File.join(mockdir, "sample with space.apk")
-  icon_not_set_file_path          = File.join(mockdir, "UECExpress.apk")
-  dummy_file_path                 = File.join(mockdir, "dummy.apk")
-  dsa_file_path                   = File.join(mockdir, "dsa.apk")
-  vector_file_path                = File.join(mockdir, "vector-icon.apk")
-  vector_v26_file_path            = File.join(mockdir, "vector-icon-v26.apk")
+  mockdir = File.join(File.dirname(__FILE__), "mock")
+  sample_file_path = File.join(mockdir, "sample.apk")
+  sample2_file_path = File.join(mockdir, "BarcodeScanner4.2.apk")
+  sample_space_file_path = File.join(mockdir, "sample with space.apk")
+  icon_not_set_file_path = File.join(mockdir, "UECExpress.apk")
+  dummy_file_path = File.join(mockdir, "dummy.apk")
+  dsa_file_path = File.join(mockdir, "dsa.apk")
+  vector_file_path = File.join(mockdir, "vector-icon.apk")
+  vector_v26_file_path = File.join(mockdir, "vector-icon-v26.apk")
   multi_application_tag_file_path = File.join(mockdir, "multi_application_tag.apk")
-  unsigned_file_path              = File.join(mockdir, "app-release-unsigned.apk")
+  unsigned_file_path = File.join(mockdir, "app-release-unsigned.apk")
 
   it "Sample apk file exist" do
     File.exist?(sample_file_path).should == true
@@ -48,15 +48,14 @@ describe "AndroidApk" do
   end
 
   it "Can read apk information" do
-    apk.icon.should == "res/drawable-mdpi/ic_launcher.png"
-    apk.label.should == "sample"
-    apk.package_name.should == "com.example.sample"
-    apk.version_code.should == "1"
-    apk.version_name.should == "1.0"
-    apk.sdk_version.should == "7"
-    apk.target_sdk_version.should == "15"
-    apk.labels.length.should == 1
-    apk.labels["ja"].should == "サンプル"
+    expect(apk.icon).to eq("res/drawable-mdpi/ic_launcher.png")
+    expect(apk.label).to eq("sample")
+    expect(apk.package_name).to eq("com.example.sample")
+    expect(apk.version_code).to eq("1")
+    expect(apk.version_name).to eq("1.0")
+    expect(apk.sdk_version).to eq("7")
+    expect(apk.target_sdk_version).to eq("15")
+    expect(apk.labels).to include("ja" => "サンプル")
   end
 
   it "Can detect signed" do
