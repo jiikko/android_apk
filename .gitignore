@@ -49,7 +49,9 @@ pkg
 #*.rbc
 
 # Intellij
-.idea
+.idea/*
+
+!.idea/codeStyles/
 *.iml
 
 # OSX
