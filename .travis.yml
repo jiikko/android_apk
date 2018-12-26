@@ -24,4 +24,4 @@ script:
   - |
     export ANDROID_HOME="$PWD/sdk"
     export PATH="$ANDROID_HOME/build-tools/27.0.3:$PATH"
-    bundle exec rspec spec
+    bundle exec rake spec
