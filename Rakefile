@@ -1,7 +1,11 @@
-# encoding: utf-8
+# frozen_string_literal: true
 
-require 'rubygems'
-require 'bundler'
+require "bundler/gem_tasks"
+require "rspec/core/rake_task"
+require "rubocop/rake_task"
+
+require_relative "lib/version"
+
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
@@ -9,41 +13,35 @@ rescue Bundler::BundlerError => e
   $stderr.puts "Run `bundle install` to install missing gems"
   exit e.status_code
 end
-require 'rake'
 
-require 'jeweler'
-Jeweler::Tasks.new do |gem|
-  # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "android_apk"
-  gem.homepage = "http://github.com/kyoro/android_apk"
-  gem.license = "MIT"
-  gem.summary = "Android APK file analyzer"
-  gem.description = "This gem allows you to analyze Android application package file (.apk files)"
-  gem.email = "kyoro@hakamastyle.net"
-  gem.authors = ["Kyosuke INOUE"]
-  # dependencies defined in Gemfile
-end
-Jeweler::RubygemsDotOrgTasks.new
-
-require 'rspec/core'
-require 'rspec/core/rake_task'
-RSpec::Core::RakeTask.new(:spec) do |spec|
-  spec.pattern = FileList['spec/**/*_spec.rb']
+RSpec::Core::RakeTask.new(:specs) do |task|
+  task.pattern = "spec/**/*.rb"
 end
 
-RSpec::Core::RakeTask.new(:rcov) do |spec|
-  spec.pattern = 'spec/**/*_spec.rb'
-  spec.rcov = true
+task default: :specs
+
+task :spec do
+  Rake::Task["specs"].invoke
+  Rake::Task["rubocop"].invoke
+  Rake::Task["spec_docs"].invoke
 end
 
-task :default => :spec
+desc "Run RuboCop on the lib/specs directory"
+RuboCop::RakeTask.new(:rubocop) do |task|
+  task.patterns = %w(lib/**/*.rb spec/**/*.rb)
+end
+
+RSpec::Core::RakeTask.new(:rcov) do |task|
+  task.pattern = 'spec/**/*_spec.rb'
+  task.rcov = true
+end
 
 require 'rdoc/task'
 Rake::RDocTask.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
+  version = AndroidApk::VERSION
 
   rdoc.rdoc_dir = 'rdoc'
   rdoc.title = "android_apk #{version}"
-  rdoc.rdoc_files.include('README*')
+  rdoc.rdoc_files.include('README.md')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end

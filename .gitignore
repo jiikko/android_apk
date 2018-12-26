@@ -56,3 +56,5 @@ pkg
 .DS_Store
 
 vendor/bundle
+
+.gitignore
