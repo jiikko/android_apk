@@ -12,7 +12,6 @@ Gem::Specification.new do |spec|
   spec.date = "2015-04-29"
   spec.description = "This library can analyze Android APK application package. You can get any information of android apk file."
   spec.summary = "Android APK file analyzer"
-  spec.email = "kyoro@hakamastyle.net"
   spec.homepage = "https://github.com/DeployGate/android_apk"
   spec.license = "MIT"
 

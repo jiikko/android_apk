@@ -30,21 +30,21 @@ describe "AndroidApk" do
 
   it "Library can not read apk file" do
     apk = AndroidApk.analyze(sample_file_path + "dummy")
-    apk.should.nil?
+    expect(apk).to be_nil
   end
 
   it "Library can not read invalid apk file" do
     apk = AndroidApk.analyze(dummy_file_path)
-    apk.should.nil?
+    expect(apk).to be_nil
   end
 
   it "Library can read apk file" do
     apk = AndroidApk.analyze(sample_file_path)
-    apk.should_not.nil?
+    expect(apk).not_to be_nil
     apk2 = AndroidApk.analyze(sample2_file_path)
-    apk2.should_not.nil?
+    expect(apk2).not_to be_nil
     apk3 = AndroidApk.analyze(unsigned_file_path)
-    apk3.should_not.nil?
+    expect(apk3).not_to be_nil
   end
 
   it "Can read apk information" do
@@ -92,12 +92,12 @@ describe "AndroidApk" do
   end
 
   it "Icon file unzip 2" do
-    apk2.icons.length.should == 3
-    apk2.icon_file.should_not.nil?
-    apk2.icon_file(120).should_not.nil?
-    apk2.icon_file("120").should_not.nil?
-    apk2.icon_file(160).should_not.nil?
-    apk2.icon_file(240).should_not.nil?
+    expect(apk2.icons.length).to eq(3)
+    expect(apk2.icon_file).not_to be_nil
+    expect(apk2.icon_file(120)).not_to be_nil
+    expect(apk2.icon_file(160)).not_to be_nil
+    expect(apk2.icon_file(240)).not_to be_nil
+    expect(apk2.icon_file("120")).not_to be_nil
   end
 
   it "Can read signature 2" do
