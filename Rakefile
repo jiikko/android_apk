@@ -9,8 +9,8 @@ require_relative "lib/version"
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
-  $stderr.puts e.message
-  $stderr.puts "Run `bundle install` to install missing gems"
+  warn e.message
+  warn "Run `bundle install` to install missing gems"
   exit e.status_code
 end
 
@@ -32,16 +32,16 @@ RuboCop::RakeTask.new(:rubocop) do |task|
 end
 
 RSpec::Core::RakeTask.new(:rcov) do |task|
-  task.pattern = 'spec/**/*_spec.rb'
+  task.pattern = "spec/**/*_spec.rb"
   task.rcov = true
 end
 
-require 'rdoc/task'
+require "rdoc/task"
 Rake::RDocTask.new do |rdoc|
   version = AndroidApk::VERSION
 
-  rdoc.rdoc_dir = 'rdoc'
+  rdoc.rdoc_dir = "rdoc"
   rdoc.title = "android_apk #{version}"
-  rdoc.rdoc_files.include('README.md')
-  rdoc.rdoc_files.include('lib/**/*.rb')
+  rdoc.rdoc_files.include("README.md")
+  rdoc.rdoc_files.include("lib/**/*.rb")
 end
