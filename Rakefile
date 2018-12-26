@@ -6,6 +6,10 @@ require "rubocop/rake_task"
 require "rdoc/task"
 
 require_relative "lib/version"
+require_relative "lib/android_apk"
+
+require "json"
+require "yaml"
 
 begin
   Bundler.setup(:default, :development)
@@ -17,6 +21,8 @@ end
 
 RSpec::Core::RakeTask.new(:specs) do |task|
   task.pattern = "spec/**/*.rb"
+
+  raise "you need to have aapt in PATH" unless File.executable?(`which aapt`.chomp)
 end
 
 task default: :specs

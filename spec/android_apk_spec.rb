@@ -2,8 +2,11 @@
 
 require File.expand_path(File.dirname(__FILE__) + "/spec_helper")
 require "pp"
+require "yaml"
 
 describe "AndroidApk" do
+  let(:subject_apk) { AndroidApk.analyze(apk_filepath) }
+
   apk = nil
   apk2 = nil
   apk3 = nil
@@ -21,87 +24,134 @@ describe "AndroidApk" do
   multi_application_tag_file_path = File.join(mockdir, "multi_application_tag.apk")
   unsigned_file_path = File.join(mockdir, "app-release-unsigned.apk")
 
-  it "Sample apk file exist" do
-    expect(File.exist?(sample_file_path)).to be_truthy
-    expect(File.exist?(sample2_file_path)).to be_truthy
-    expect(File.exist?(sample_space_file_path)).to be_truthy
-    expect(File.exist?(unsigned_file_path)).to be_truthy
+  context "check preconditions for this spec" do
+    it "should have sample apk files" do
+      expect(File.exist?(sample_file_path)).to be_truthy
+      expect(File.exist?(sample2_file_path)).to be_truthy
+      expect(File.exist?(sample_space_file_path)).to be_truthy
+      expect(File.exist?(unsigned_file_path)).to be_truthy
+    end
   end
 
-  it "Library can not read apk file" do
-    apk = AndroidApk.analyze(sample_file_path + "dummy")
-    expect(apk).to be_nil
+  context "if invalid apk files are given" do
+    shared_examples :no_exception_but_nil do |message, apk_filepath|
+      context message do
+        let(:apk_filepath) { apk_filepath }
+
+        it "should not raise any exception but return nil" do
+          expect(subject_apk).to be_nil
+        end
+      end
+    end
+
+    include_examples :no_exception_but_nil, "not found", sample_file_path + "dummy"
+    include_examples :no_exception_but_nil, "not valid apk files", dummy_file_path
   end
 
-  it "Library can not read invalid apk file" do
-    apk = AndroidApk.analyze(dummy_file_path)
-    expect(apk).to be_nil
+  context "if valid apk files are given" do
+    context "sample.apk" do
+      let(:apk_filepath) { sample_file_path }
+
+      it "should return non-nil" do
+        expect(subject_apk).not_to be_nil
+      end
+
+      it "should have icon drawable" do
+        expect(subject_apk.icon).to eq("res/drawable-mdpi/ic_launcher.png")
+      end
+
+      it "should have label stuff" do
+        expect(subject_apk.label).to eq("sample")
+        expect(subject_apk.labels).to include("ja" => "サンプル")
+        expect(subject_apk.labels.size).to eq(1)
+      end
+
+      it "should have package stuff" do
+        expect(subject_apk.package_name).to eq("com.example.sample")
+        expect(subject_apk.version_code).to eq("1")
+        expect(subject_apk.version_name).to eq("1.0")
+      end
+
+      it "should have sdk version stuff" do
+        expect(subject_apk.sdk_version).to eq("7")
+        expect(subject_apk.target_sdk_version).to eq("15")
+      end
+
+      it "should have signature" do
+        expect(subject_apk.signature).to eq("c1f285f69cc02a397135ed182aa79af53d5d20a1")
+      end
+
+      it "should multiple icons for each dimensions" do
+        expect(subject_apk.icons.length).to eq(3)
+        expect(subject_apk.icons.keys.empty?).to be_falsey
+        expect(subject_apk.icon_file).not_to be_nil
+        expect(subject_apk.icon_file(subject_apk.icons.keys[0])).not_to be_nil
+      end
+
+      it "should be signed" do
+        expect(subject_apk.signed?).to be_truthy
+      end
+    end
+
+    context "BarcodeScanner4.2.apk" do
+      let(:apk_filepath) { sample2_file_path }
+
+      it "should return non-nil" do
+        expect(subject_apk).not_to be_nil
+      end
+
+      it "should have icon drawable" do
+        expect(subject_apk.icon).to eq("res/drawable/launcher_icon.png")
+      end
+
+      it "should have label stuff" do
+        expect(subject_apk.label).to eq("Barcode Scanner")
+        expect(subject_apk.labels).to include("ja" => "QRコードスキャナー")
+        expect(subject_apk.labels.size).to eq(29)
+      end
+
+      it "should have package stuff" do
+        expect(subject_apk.package_name).to eq("com.google.zxing.client.android")
+        expect(subject_apk.version_code).to eq("84")
+        expect(subject_apk.version_name).to eq("4.2")
+      end
+
+      it "should have sdk version stuff" do
+        expect(subject_apk.sdk_version).to eq("7")
+        expect(subject_apk.target_sdk_version).to eq("7")
+      end
+
+      it "should have signature" do
+        expect(subject_apk.signature).to eq("e460df681d330f93f92e712cd79985d99379f5e0")
+      end
+
+      it "should multiple icons for each dimensions" do
+        expect(subject_apk.icons.length).to eq(3)
+        expect(subject_apk.icons.keys.empty?).to be_falsey
+        expect(subject_apk.icon_file).not_to be_nil
+        expect(subject_apk.icon_file(120)).not_to be_nil
+        expect(subject_apk.icon_file(160)).not_to be_nil
+        expect(subject_apk.icon_file(240)).not_to be_nil
+        expect(subject_apk.icon_file("120")).not_to be_nil
+      end
+
+      it "should be signed" do
+        expect(subject_apk.signed?).to be_truthy
+      end
+    end
   end
 
   it "Library can read apk file" do
-    apk = AndroidApk.analyze(sample_file_path)
-    expect(apk).not_to be_nil
-    apk2 = AndroidApk.analyze(sample2_file_path)
-    expect(apk2).not_to be_nil
     apk3 = AndroidApk.analyze(unsigned_file_path)
     expect(apk3).not_to be_nil
   end
 
-  it "Can read apk information" do
-    expect(apk.icon).to eq("res/drawable-mdpi/ic_launcher.png")
-    expect(apk.label).to eq("sample")
-    expect(apk.package_name).to eq("com.example.sample")
-    expect(apk.version_code).to eq("1")
-    expect(apk.version_name).to eq("1.0")
-    expect(apk.sdk_version).to eq("7")
-    expect(apk.target_sdk_version).to eq("15")
-    expect(apk.labels).to include("ja" => "サンプル")
-    expect(apk.labels.size).to eq(1)
-  end
-
   it "Can detect signed" do
-    expect(apk.signed?).to be_truthy
-    expect(apk2.signed?).to be_truthy
     expect(apk3.signed?).to be_falsey
-  end
-
-  it "Can read signature" do
-    expect(apk.signature).to eq("c1f285f69cc02a397135ed182aa79af53d5d20a1")
   end
 
   it "Can read apk3 signature" do
     expect(apk3.signature).to be_nil
-  end
-
-  it "Icon file unzip" do
-    expect(apk.icons.length).to eq(3)
-    expect(apk.icon_file).not_to be_nil
-    expect(apk.icon_file(apk.icons.keys[0])).not_to be_nil
-  end
-
-  it "Can read apk information 2" do
-    expect(apk2.icon).to eq("res/drawable/launcher_icon.png")
-    expect(apk2.label).to eq("Barcode Scanner")
-    expect(apk2.package_name).to eq("com.google.zxing.client.android")
-    expect(apk2.version_code).to eq("84")
-    expect(apk2.version_name).to eq("4.2")
-    expect(apk2.sdk_version).to eq("7")
-    expect(apk2.target_sdk_version).to eq("7")
-    expect(apk2.labels).to include("ja" => "QRコードスキャナー")
-    expect(apk2.labels.size).to eq(29)
-  end
-
-  it "Icon file unzip 2" do
-    expect(apk2.icons.length).to eq(3)
-    expect(apk2.icon_file).not_to be_nil
-    expect(apk2.icon_file(120)).not_to be_nil
-    expect(apk2.icon_file(160)).not_to be_nil
-    expect(apk2.icon_file(240)).not_to be_nil
-    expect(apk2.icon_file("120")).not_to be_nil
-  end
-
-  it "Can read signature 2" do
-    expect(apk2.signature).to eq("e460df681d330f93f92e712cd79985d99379f5e0")
   end
 
   it "If icon has not set returns nil" do
