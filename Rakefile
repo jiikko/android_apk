@@ -3,6 +3,7 @@
 require "bundler/gem_tasks"
 require "rspec/core/rake_task"
 require "rubocop/rake_task"
+require "rdoc/task"
 
 require_relative "lib/version"
 
@@ -23,7 +24,7 @@ task default: :specs
 task :spec do
   Rake::Task["specs"].invoke
   Rake::Task["rubocop"].invoke
-  Rake::Task["spec_docs"].invoke
+  Rake::Task["rdoc"].invoke
 end
 
 desc "Run RuboCop on the lib/specs directory"
@@ -36,7 +37,6 @@ RSpec::Core::RakeTask.new(:rcov) do |task|
   task.rcov = true
 end
 
-require "rdoc/task"
 Rake::RDocTask.new do |rdoc|
   version = AndroidApk::VERSION
 
