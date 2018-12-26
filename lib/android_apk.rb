@@ -8,6 +8,7 @@ class AndroidApk
   attr_accessor :results, :label, :labels, :icon, :icons, :package_name, :version_code, :version_name, :sdk_version, :target_sdk_version, :filepath
 
   NOT_ALLOW_DUPLICATE_TAG_NAMES = %w(application).freeze
+
   class AndroidManifestValidateError < StandardError
   end
 
@@ -30,19 +31,21 @@ class AndroidApk
     apk.icon = vars["application"]["icon"]
 
     # package
-    apk.package_name, apk.version_code, apk.version_name =
-      vars["package"].values_at("name", "versionCode", "versionName")
+
+    apk.package_name = vars["package"]["name"]
+    apk.version_code = vars["package"]["versionCode"]
+    apk.version_name = vars["package"]["versionName"]
 
     # platforms
     apk.sdk_version = vars["sdkVersion"]
     apk.target_sdk_version = vars["targetSdkVersion"]
 
     # icons and labels
-    apk.icons = ({})
-    apk.labels = ({})
+    apk.icons = {}
+    apk.labels = {}
     vars.each_key do |k|
-      k =~ /^application-icon-(\d+)$/ && apk.icons[Regexp.last_match(1).to_i] = vars[k]
-      k =~ /^application-label-(\S+)$/ && apk.labels[Regexp.last_match(1)] = vars[k]
+      apk.icons[Regexp.last_match(1).to_i] = vars[k] if k =~ /^application-icon-(\d+)$/
+      apk.labels[Regexp.last_match(1)] = vars[k] if k =~ /^application-label-(\S+)$/
     end
 
     return apk
@@ -59,8 +62,8 @@ class AndroidApk
 
     Dir.mktmpdir do |dir|
       command = "unzip #{self.filepath.shellescape} #{icon.shellescape} -d #{dir.shellescape} 2>&1"
-      results = `#{command}`
-      path =  dir + "/" + icon
+      `#{command}`
+      path = dir + "/" + icon
       return nil unless File.exist?(path)
 
       return File.new(path, "r")
@@ -162,9 +165,11 @@ class AndroidApk
           end
         end
       else
-        vars[key] = value.nil? ? nil :
-          (value.kind_of?(Hash) ? value :
-            (value.length > 1 ? value : value[0]))
+        vars[key] = if value.nil? || value.kind_of?(Hash)
+                      value
+                    else
+                      value.length > 1 ? value : value[0]
+                    end
       end
     end
     return vars
