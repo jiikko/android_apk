@@ -1,5 +1,5 @@
 language: ruby
-install: bundle install --clean --path=vendor/bundle
+install: bundle install --clean --path=vendor/bundle --jobs=4
 cache:
   directories:
     - vendor/bundle
@@ -24,4 +24,4 @@ script:
   - |
     export ANDROID_HOME="$PWD/sdk"
     export PATH="$ANDROID_HOME/build-tools/27.0.3:$PATH"
-    bundle exec rspec spec
+    bundle exec rake spec

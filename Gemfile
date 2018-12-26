@@ -1,10 +1,6 @@
-source "http://rubygems.org"
-# Add dependencies required to use your gem here.
-# Example:
-#   gem "activesupport", ">= 2.3.5"
+# frozen_string_literal: true
 
-# Add dependencies to develop your gem here.
-# Include everything needed to run rake, tests, features, etc.
-group :test do
-  gem "rspec", "~> 3.4.0"
-end
+source "https://rubygems.org"
+
+# Specify your gem's dependencies in android_apk.gemspec
+gemspec
