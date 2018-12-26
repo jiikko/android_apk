@@ -56,12 +56,13 @@ describe "AndroidApk" do
     expect(apk.sdk_version).to eq("7")
     expect(apk.target_sdk_version).to eq("15")
     expect(apk.labels).to include("ja" => "サンプル")
+    expect(apk.labels.size).to eq(1)
   end
 
   it "Can detect signed" do
-    apk.signed?.should == true
-    apk2.signed?.should == true
-    apk3.signed?.should == false
+    expect(apk.signed?).to be_truthy
+    expect(apk2.signed?).to be_truthy
+    expect(apk3.signed?).to be_falsey
   end
 
   it "Can read signature" do
@@ -79,15 +80,15 @@ describe "AndroidApk" do
   end
 
   it "Can read apk information 2" do
-    apk2.icon.should == "res/drawable/launcher_icon.png"
-    apk2.label.should == "Barcode Scanner"
-    apk2.package_name.should == "com.google.zxing.client.android"
-    apk2.version_code.should == "84"
-    apk2.version_name.should == "4.2"
-    apk2.sdk_version.should == "7"
-    apk2.target_sdk_version.should == "7"
-    apk2.labels.length.should == 29
-    apk2.labels["ja"].should == "QRコードスキャナー"
+    expect(apk2.icon).to eq("res/drawable/launcher_icon.png")
+    expect(apk2.label).to eq("Barcode Scanner")
+    expect(apk2.package_name).to eq("com.google.zxing.client.android")
+    expect(apk2.version_code).to eq("84")
+    expect(apk2.version_name).to eq("4.2")
+    expect(apk2.sdk_version).to eq("7")
+    expect(apk2.target_sdk_version).to eq("7")
+    expect(apk2.labels).to include("ja" => "QRコードスキャナー")
+    expect(apk2.labels.size).to eq(29)
   end
 
   it "Icon file unzip 2" do
