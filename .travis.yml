@@ -1,5 +1,5 @@
 language: ruby
-install: bundle install --clean --path=vendor/bundle
+install: bundle install --clean --path=vendor/bundle --jobs=4
 cache:
   directories:
     - vendor/bundle
