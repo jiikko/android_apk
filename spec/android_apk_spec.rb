@@ -7,6 +7,16 @@ describe "AndroidApk" do
 
   FIXTURE_DIR = File.join(File.dirname(__FILE__), "mock")
 
+  shared_examples_for :analyzable do
+    it "should exist" do
+      expect(File.exist?(apk_filepath)).to be_truthy
+    end
+
+    it "should be analyzable" do
+      expect(subject_apk).not_to be_nil
+    end
+  end
+
   context "if invalid sample apk files are given" do
     context "no such apk file" do
       let(:apk_filepath) { File.join(FIXTURE_DIR, "no_such_file") }
@@ -50,13 +60,7 @@ describe "AndroidApk" do
       context "#{apk_name} which is a very simple sample" do
         let(:apk_filepath) { File.join(FIXTURE_DIR, apk_name) }
 
-        it "should exist" do
-          expect(File.exist?(apk_filepath)).to be_truthy
-        end
-
-        it "should be analyzable" do
-          expect(subject_apk).not_to be_nil
-        end
+        include_examples :analyzable
 
         it "should have icon drawable" do
           expect(subject_apk.icon).to eq("res/drawable-mdpi/ic_launcher.png")
@@ -103,13 +107,7 @@ describe "AndroidApk" do
     context "BarcodeScanner4.2.apk whose icon is in drawable dir" do
       let(:apk_filepath) { File.join(FIXTURE_DIR, "BarcodeScanner4.2.apk") }
 
-      it "should exist" do
-        expect(File.exist?(apk_filepath)).to be_truthy
-      end
-
-      it "should be analyzable" do
-        expect(subject_apk).not_to be_nil
-      end
+      include_examples :analyzable
 
       it "should have icon drawable" do
         expect(subject_apk.icon).to eq("res/drawable/launcher_icon.png")
@@ -158,13 +156,7 @@ describe "AndroidApk" do
     context "app-release-unsigned.apk which is not signed" do
       let(:apk_filepath) { File.join(FIXTURE_DIR, "app-release-unsigned.apk") }
 
-      it "should exist" do
-        expect(File.exist?(apk_filepath)).to be_truthy
-      end
-
-      it "should be analyzable" do
-        expect(subject_apk).not_to be_nil
-      end
+      include_examples :analyzable
 
       it "should not be signed" do
         expect(subject_apk.signed?).to be_falsey
@@ -182,13 +174,7 @@ describe "AndroidApk" do
     context "UECExpress.apk which does not have icons" do
       let(:apk_filepath) { File.join(FIXTURE_DIR, "UECExpress.apk") }
 
-      it "should exist" do
-        expect(File.exist?(apk_filepath)).to be_truthy
-      end
-
-      it "should be analyzable" do
-        expect(subject_apk).not_to be_nil
-      end
+      include_examples :analyzable
 
       it "should be no icon file" do
         expect(subject_apk.icon_file).to be_nil
@@ -203,13 +189,7 @@ describe "AndroidApk" do
     context "dsa.apk which has been signed with DSA" do
       let(:apk_filepath) { File.join(FIXTURE_DIR, "dsa.apk") }
 
-      it "should exist" do
-        expect(File.exist?(apk_filepath)).to be_truthy
-      end
-
-      it "should be analyzable" do
-        expect(subject_apk).not_to be_nil
-      end
+      include_examples :analyzable
 
       it "should also return its signature" do
         expect(subject_apk.signature).to eq("2d8068f79a5840cbce499b51821aaa6c775ff3ff")
@@ -224,13 +204,7 @@ describe "AndroidApk" do
       context "#{apk_name} whose icon is a vector file" do
         let(:apk_filepath) { File.join(FIXTURE_DIR, apk_name) }
 
-        it "should exist" do
-          expect(File.exist?(apk_filepath)).to be_truthy
-        end
-
-        it "should be analyzable" do
-          expect(subject_apk).not_to be_nil
-        end
+        include_examples :analyzable
 
         it "should have non-png icon" do
           expect(subject_apk.icon_file).not_to be_nil
