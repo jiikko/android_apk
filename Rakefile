@@ -6,10 +6,6 @@ require "rubocop/rake_task"
 require "rdoc/task"
 
 require_relative "lib/version"
-require_relative "lib/android_apk"
-
-require "json"
-require "yaml"
 
 begin
   Bundler.setup(:default, :development)
@@ -44,10 +40,8 @@ RSpec::Core::RakeTask.new(:rcov) do |task|
 end
 
 Rake::RDocTask.new do |rdoc|
-  version = AndroidApk::VERSION
-
   rdoc.rdoc_dir = "rdoc"
-  rdoc.title = "android_apk #{version}"
+  rdoc.title = "android_apk #{AndroidApk::VERSION}"
   rdoc.rdoc_files.include("README.md")
   rdoc.rdoc_files.include("lib/**/*.rb")
 end
