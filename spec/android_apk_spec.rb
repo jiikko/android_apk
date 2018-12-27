@@ -3,7 +3,7 @@
 require File.expand_path(File.dirname(__FILE__) + "/spec_helper")
 
 describe "AndroidApk" do
-  let(:subject_apk) { AndroidApk.analyze(apk_filepath) }
+  subject { AndroidApk.analyze(apk_filepath) }
 
   FIXTURE_DIR = File.join(File.dirname(__FILE__), "mock")
 
@@ -13,7 +13,7 @@ describe "AndroidApk" do
     end
 
     it "should be analyzable" do
-      expect(subject_apk).not_to be_nil
+      expect(subject).not_to be_nil
     end
   end
 
@@ -26,7 +26,7 @@ describe "AndroidApk" do
       end
 
       it "should not raise any exception but not be analyzable" do
-        expect(subject_apk).to be_nil
+        expect(subject).to be_nil
       end
     end
 
@@ -38,7 +38,7 @@ describe "AndroidApk" do
       end
 
       it "should not raise any exception but not be analyzable" do
-        expect(subject_apk).to be_nil
+        expect(subject).to be_nil
       end
     end
 
@@ -50,7 +50,7 @@ describe "AndroidApk" do
       end
 
       it "should raise error" do
-        expect { subject_apk }.to raise_error(AndroidApk::AndroidManifestValidateError)
+        expect { subject }.to raise_error(AndroidApk::AndroidManifestValidateError)
       end
     end
   end
@@ -63,43 +63,43 @@ describe "AndroidApk" do
         include_examples :analyzable
 
         it "should have icon drawable" do
-          expect(subject_apk.icon).to eq("res/drawable-mdpi/ic_launcher.png")
+          expect(subject.icon).to eq("res/drawable-mdpi/ic_launcher.png")
         end
 
         it "should have label stuff" do
-          expect(subject_apk.label).to eq("sample")
-          expect(subject_apk.labels).to include("ja" => "サンプル")
-          expect(subject_apk.labels.size).to eq(1)
+          expect(subject.label).to eq("sample")
+          expect(subject.labels).to include("ja" => "サンプル")
+          expect(subject.labels.size).to eq(1)
         end
 
         it "should have package stuff" do
-          expect(subject_apk.package_name).to eq("com.example.sample")
-          expect(subject_apk.version_code).to eq("1")
-          expect(subject_apk.version_name).to eq("1.0")
+          expect(subject.package_name).to eq("com.example.sample")
+          expect(subject.version_code).to eq("1")
+          expect(subject.version_name).to eq("1.0")
         end
 
         it "should have sdk version stuff" do
-          expect(subject_apk.sdk_version).to eq("7")
-          expect(subject_apk.target_sdk_version).to eq("15")
+          expect(subject.sdk_version).to eq("7")
+          expect(subject.target_sdk_version).to eq("15")
         end
 
         it "should have signature" do
-          expect(subject_apk.signature).to eq("c1f285f69cc02a397135ed182aa79af53d5d20a1")
+          expect(subject.signature).to eq("c1f285f69cc02a397135ed182aa79af53d5d20a1")
         end
 
         it "should multiple icons for each dimensions" do
-          expect(subject_apk.icons.length).to eq(3)
-          expect(subject_apk.icons.keys.empty?).to be_falsey
-          expect(subject_apk.icon_file).not_to be_nil
-          expect(subject_apk.icon_file(subject_apk.icons.keys[0])).not_to be_nil
+          expect(subject.icons.length).to eq(3)
+          expect(subject.icons.keys.empty?).to be_falsey
+          expect(subject.icon_file).not_to be_nil
+          expect(subject.icon_file(subject.icons.keys[0])).not_to be_nil
         end
 
         it "should be signed" do
-          expect(subject_apk.signed?).to be_truthy
+          expect(subject.signed?).to be_truthy
         end
 
         it "should be installable" do
-          expect(subject_apk.installable?).to be_truthy
+          expect(subject.installable?).to be_truthy
         end
       end
     end
@@ -110,46 +110,46 @@ describe "AndroidApk" do
       include_examples :analyzable
 
       it "should have icon drawable" do
-        expect(subject_apk.icon).to eq("res/drawable/launcher_icon.png")
+        expect(subject.icon).to eq("res/drawable/launcher_icon.png")
       end
 
       it "should have label stuff" do
-        expect(subject_apk.label).to eq("Barcode Scanner")
-        expect(subject_apk.labels).to include("ja" => "QRコードスキャナー")
-        expect(subject_apk.labels.size).to eq(29)
+        expect(subject.label).to eq("Barcode Scanner")
+        expect(subject.labels).to include("ja" => "QRコードスキャナー")
+        expect(subject.labels.size).to eq(29)
       end
 
       it "should have package stuff" do
-        expect(subject_apk.package_name).to eq("com.google.zxing.client.android")
-        expect(subject_apk.version_code).to eq("84")
-        expect(subject_apk.version_name).to eq("4.2")
+        expect(subject.package_name).to eq("com.google.zxing.client.android")
+        expect(subject.version_code).to eq("84")
+        expect(subject.version_name).to eq("4.2")
       end
 
       it "should have sdk version stuff" do
-        expect(subject_apk.sdk_version).to eq("7")
-        expect(subject_apk.target_sdk_version).to eq("7")
+        expect(subject.sdk_version).to eq("7")
+        expect(subject.target_sdk_version).to eq("7")
       end
 
       it "should have signature" do
-        expect(subject_apk.signature).to eq("e460df681d330f93f92e712cd79985d99379f5e0")
+        expect(subject.signature).to eq("e460df681d330f93f92e712cd79985d99379f5e0")
       end
 
       it "should multiple icons for each dimensions" do
-        expect(subject_apk.icons.length).to eq(3)
-        expect(subject_apk.icons.keys.empty?).to be_falsey
-        expect(subject_apk.icon_file).not_to be_nil
-        expect(subject_apk.icon_file(120)).not_to be_nil
-        expect(subject_apk.icon_file(160)).not_to be_nil
-        expect(subject_apk.icon_file(240)).not_to be_nil
-        expect(subject_apk.icon_file("120")).not_to be_nil
+        expect(subject.icons.length).to eq(3)
+        expect(subject.icons.keys.empty?).to be_falsey
+        expect(subject.icon_file).not_to be_nil
+        expect(subject.icon_file(120)).not_to be_nil
+        expect(subject.icon_file(160)).not_to be_nil
+        expect(subject.icon_file(240)).not_to be_nil
+        expect(subject.icon_file("120")).not_to be_nil
       end
 
       it "should be signed" do
-        expect(subject_apk.signed?).to be_truthy
+        expect(subject.signed?).to be_truthy
       end
 
       it "should be installable" do
-        expect(subject_apk.installable?).to be_truthy
+        expect(subject.installable?).to be_truthy
       end
     end
 
@@ -159,15 +159,15 @@ describe "AndroidApk" do
       include_examples :analyzable
 
       it "should not be signed" do
-        expect(subject_apk.signed?).to be_falsey
+        expect(subject.signed?).to be_falsey
       end
 
       it "should not expose signature" do
-        expect(subject_apk.signature).to be_nil
+        expect(subject.signature).to be_nil
       end
 
       it "should not be installable" do
-        expect(subject_apk.installable?).to be_falsey
+        expect(subject.installable?).to be_falsey
       end
     end
 
@@ -177,12 +177,12 @@ describe "AndroidApk" do
       include_examples :analyzable
 
       it "should be no icon file" do
-        expect(subject_apk.icon_file).to be_nil
-        expect(subject_apk.icon_file(nil, true)).to be_nil
+        expect(subject.icon_file).to be_nil
+        expect(subject.icon_file(nil, true)).to be_nil
       end
 
       it "should be installable" do
-        expect(subject_apk.installable?).to be_truthy
+        expect(subject.installable?).to be_truthy
       end
     end
 
@@ -192,11 +192,11 @@ describe "AndroidApk" do
       include_examples :analyzable
 
       it "should also return its signature" do
-        expect(subject_apk.signature).to eq("2d8068f79a5840cbce499b51821aaa6c775ff3ff")
+        expect(subject.signature).to eq("2d8068f79a5840cbce499b51821aaa6c775ff3ff")
       end
 
       it "should be installable" do
-        expect(subject_apk.installable?).to be_truthy
+        expect(subject.installable?).to be_truthy
       end
     end
 
@@ -207,19 +207,19 @@ describe "AndroidApk" do
         include_examples :analyzable
 
         it "should have non-png icon" do
-          expect(subject_apk.icon_file).not_to be_nil
+          expect(subject.icon_file).not_to be_nil
         end
 
         it "should have png icon" do
-          expect(subject_apk.icon_file(nil, true)).not_to be_nil
+          expect(subject.icon_file(nil, true)).not_to be_nil
         end
 
         it "should return png icon by specific dpi" do
-          expect(subject_apk.icon_file(240, true)).not_to be_nil
+          expect(subject.icon_file(240, true)).not_to be_nil
         end
 
         it "should be installable" do
-          expect(subject_apk.installable?).to be_truthy
+          expect(subject.installable?).to be_truthy
         end
       end
     end
