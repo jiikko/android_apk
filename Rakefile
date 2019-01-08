@@ -17,6 +17,8 @@ end
 
 RSpec::Core::RakeTask.new(:specs) do |task|
   task.pattern = "spec/**/*.rb"
+
+  raise "you need to have aapt in PATH" unless File.executable?(`which aapt`.chomp)
 end
 
 task default: :specs
@@ -38,10 +40,8 @@ RSpec::Core::RakeTask.new(:rcov) do |task|
 end
 
 Rake::RDocTask.new do |rdoc|
-  version = AndroidApk::VERSION
-
   rdoc.rdoc_dir = "rdoc"
-  rdoc.title = "android_apk #{version}"
+  rdoc.title = "android_apk #{AndroidApk::VERSION}"
   rdoc.rdoc_files.include("README.md")
   rdoc.rdoc_files.include("lib/**/*.rb")
 end
