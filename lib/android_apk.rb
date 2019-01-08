@@ -183,9 +183,9 @@ class AndroidApk
       key, value = _parse_line(line)
       next if key.nil?
 
-      reject_illegal_duplicated_key!(key) if vars.key?(key)
-
       if vars.key?(key)
+        reject_illegal_duplicated_key!(key)
+        
         if vars[key].kind_of?(Hash) and value.kind_of?(Hash)
           vars[key].merge(value)
         else
