@@ -185,7 +185,7 @@ class AndroidApk
 
       if vars.key?(key)
         reject_illegal_duplicated_key!(key)
-        
+
         if vars[key].kind_of?(Hash) and value.kind_of?(Hash)
           vars[key].merge(value)
         else
