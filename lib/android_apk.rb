@@ -8,10 +8,15 @@ class AndroidApk
   attr_accessor :results, :label, :labels, :icon, :icons, :package_name, :version_code, :version_name, :sdk_version, :target_sdk_version, :filepath
 
   NOT_ALLOW_DUPLICATE_TAG_NAMES = %w(application).freeze
+  SUPPORTED_DPIS = %w(120 160 240 320 480 640).freeze
 
-  class AndroidManifestValidateError < StandardError
-  end
+  class AndroidManifestValidateError < StandardError; end
 
+  # Do analyze the given apk file. Analyzed apk does not mean *valid*.
+  #
+  # @param [String] filepath a filepath of an apk to be analyzed
+  # @raise [AndroidManifestValidateError] if AndroidManifest.xml has multiple application tags.
+  # @return [AndroidApk, nil] An instance of AndroidApk will be returned if no problem exists while analyzing. Otherwise nil.
   def self.analyze(filepath)
     return nil unless File.exist?(filepath)
 
@@ -51,6 +56,11 @@ class AndroidApk
     return apk
   end
 
+  # Get an application icon file of this apk file.
+  #
+  # @param [Integer] dpi one of (see SUPPORTED_DPIS)
+  # @param [Boolean] want_png request a png icon expressly
+  # @return [File, nil] an application icon file object in temp dir
   def icon_file(dpi = nil, want_png = false)
     icon = dpi ? self.icons[dpi.to_i] : self.icon
     return nil if icon.empty?
@@ -70,6 +80,10 @@ class AndroidApk
     end
   end
 
+  # dpi to android drawable resource config name
+  #
+  # @param [Integer] dpi one of (see SUPPORTED_DPIS)
+  # @return [String] e.g. ldpi
   def dpi_str(dpi)
     case dpi.to_i
     when 120
@@ -89,15 +103,24 @@ class AndroidApk
     end
   end
 
+  # Whether or not this apk is installable
+  #
+  # @return [Boolean, nil] this apk is installable if true, otherwise not installable.
   def installable?
     # TODO: add not testable
     signed?
   end
 
+  # Whether or not this apk is signed but this depends on (see signature)
+  #
+  # @return [Boolean, nil] this apk is signed if true, otherwise not signed.
   def signed?
     !signature.nil?
   end
 
+  # The SHA-1 signature of this apk
+  #
+  # @return [String, nil] Return nil if cannot extract sha1 hash, otherwise the value will be returned.
   def signature
     return @signature if defined? @signature
 
@@ -120,6 +143,10 @@ class AndroidApk
     str.scan(/^'(.+)'$/).map { |v| v[0].gsub(/\\'/, "'") }
   end
 
+  # Parse values of aapt output
+  #
+  # @param [String, nil] str a values string of aapt output.
+  # @return [Array, Hash, nil] return nil if (see str) is nil. Otherwise the parsed array will be returned.
   def self._parse_values(str)
     return nil if str.nil?
 
@@ -134,6 +161,10 @@ class AndroidApk
     return vars
   end
 
+  # Parse output of a line of aapt command like `key: values`
+  #
+  # @param [String, nil] line a line of aapt command.
+  # @return [[String, Hash], nil] return nil if (see line) is nil. Otherwise the parsed hash will be returned.
   def self._parse_line(line)
     return nil if line.nil?
 
@@ -147,6 +178,10 @@ class AndroidApk
     return info[0], values
   end
 
+  # Parse output of aapt command to Hash format
+  #
+  # @param [String, nil] results output of aapt command. this may be multi lines.
+  # @return [Hash, nil] return nil if (see str) is nil. Otherwise the parsed hash will be returned.
   def self._parse_aapt(results)
     vars = {}
     results.split("\n").each do |line|
@@ -175,6 +210,8 @@ class AndroidApk
     return vars
   end
 
+  # @param [String] key a key of AndroidManifest.xml
+  # @raise [AndroidManifestValidateError] if a key is found in (see NOT_ALLOW_DUPLICATE_TAG_NAMES)
   def self.allow_duplicate?(key)
     raise AndroidManifestValidateError, "Duplication of #{key} tag is not allowed" if NOT_ALLOW_DUPLICATE_TAG_NAMES.include?(key)
 
