@@ -22,7 +22,7 @@ class AndroidApk
 
   SUPPORTED_DPIS = DPI_TO_NAME_MAP.keys.freeze
 
-  class AndroidManifestValidateError < StandardError;
+  class AndroidManifestValidateError < StandardError
   end
 
   # Do analyze the given apk file. Analyzed apk does not mean *valid*.
