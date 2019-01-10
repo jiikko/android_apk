@@ -29,9 +29,9 @@ class AndroidApk
   # @raise [AndroidManifestValidateError] if AndroidManifest.xml has multiple application tags.
   # @return [AndroidApk, nil] An instance of AndroidApk will be returned if no problem exists while analyzing. Otherwise nil.
   def self.analyze(filepath)
-    return nil unless File.exist?(filepath)
+    @current_warn_invalid_date = Zip.warn_invalid_date
 
-    Zip.warn_invalid_date = false
+    return nil unless File.exist?(filepath)
 
     apk = AndroidApk.new
     command = "aapt dump badging #{filepath.shellescape} 2>&1"
@@ -97,6 +97,8 @@ class AndroidApk
   #
   # @return [Boolean]
   def adaptive_icon?
+    Zip.warn_invalid_date = false
+
     if self.icon.end_with?(".xml") && self.icon.start_with?("res/mipmap-anydpi-v26/")
       adaptive_icon_path = "res/mipmap-xxxhdpi-v4/#{File.basename(self.icon).gsub(/\.xml\Z/, '.png')}"
 
@@ -104,6 +106,8 @@ class AndroidApk
         !zip_file.glob(adaptive_icon_path).first.nil?
       end
     end
+  ensure
+    Zip.warn_invalid_date = @current_warn_invalid_date
   end
 
   # dpi to android drawable resource config name
