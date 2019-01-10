@@ -102,8 +102,8 @@ class AndroidApk
     if self.icon.end_with?(".xml") && self.icon.start_with?("res/mipmap-anydpi-v26/")
       adaptive_icon_path = "res/mipmap-xxxhdpi-v4/#{File.basename(self.icon).gsub(/\.xml\Z/, '.png')}"
 
-      Zip::File.open(self.filepath.shellescape) do |zip_file|
-        !zip_file.glob(adaptive_icon_path).first.nil?
+      Zip::File.open(self.filepath) do |zip_file|
+        !zip_file.find_entry(adaptive_icon_path).nil?
       end
     end
   ensure

@@ -252,17 +252,19 @@ describe "AndroidApk" do
       end
     end
 
-    context "vector-icon-v26-non-adaptive-icon.apk whose icon is not an adaptive icon" do
-      let(:apk_filepath) { File.join(FIXTURE_DIR, "vector-icon-v26-non-adaptive-icon.apk") }
+    %w(vector-icon-v26-non-adaptive-icon.apk vector-icon-v26-non-adaptive-icon\ with\ space.apk).each do |apk_name|
+      context "#{apk_name} whose icon is not an adaptive icon" do
+        let(:apk_filepath) { File.join(FIXTURE_DIR, apk_name) }
 
-      it_should_behave_like :vector_icon_apk
+        it_should_behave_like :vector_icon_apk
 
-      it "should not have png icon" do
-        expect(subject.icon_file(nil, true)).to be_nil
-      end
+        it "should not have png icon" do
+          expect(subject.icon_file(nil, true)).to be_nil
+        end
 
-      it "should be an adaptive icon" do
-        expect(subject.adaptive_icon?).to be_falsey
+        it "should be an adaptive icon" do
+          expect(subject.adaptive_icon?).to be_falsey
+        end
       end
     end
   end
