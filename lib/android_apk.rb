@@ -3,6 +3,7 @@
 require "tmpdir"
 require "shellwords"
 require "open3"
+require "zip"
 
 class AndroidApk
   attr_accessor :results, :label, :labels, :icon, :icons, :package_name, :version_code, :version_name, :sdk_version, :target_sdk_version, :filepath
@@ -29,6 +30,8 @@ class AndroidApk
   # @return [AndroidApk, nil] An instance of AndroidApk will be returned if no problem exists while analyzing. Otherwise nil.
   def self.analyze(filepath)
     return nil unless File.exist?(filepath)
+
+    Zip.warn_invalid_date = false
 
     apk = AndroidApk.new
     command = "aapt dump badging #{filepath.shellescape} 2>&1"
@@ -87,6 +90,16 @@ class AndroidApk
       return nil unless File.exist?(path)
 
       return File.new(path, "r")
+    end
+  end
+
+  def adaptive_icon?
+    if self.icon.end_with?(".xml") && self.icon.start_with?("res/mipmap-anydpi-v26/")
+      adaptive_icon_path = "res/mipmap-xxxhdpi-v4/#{File.basename(self.icon).gsub(/\.xml\Z/, '.png')}"
+
+      Zip::File.open(self.filepath.shellescape) do |zip_file|
+        !zip_file.glob(adaptive_icon_path).first.nil?
+      end
     end
   end
 

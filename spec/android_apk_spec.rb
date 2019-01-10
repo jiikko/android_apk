@@ -101,6 +101,10 @@ describe "AndroidApk" do
         it "should be installable" do
           expect(subject.installable?).to be_truthy
         end
+
+        it "should not be adaptive icon" do
+          expect(subject.adaptive_icon?).to be_falsey
+        end
       end
     end
 
@@ -151,6 +155,10 @@ describe "AndroidApk" do
       it "should be installable" do
         expect(subject.installable?).to be_truthy
       end
+
+      it "should not be adaptive icon" do
+        expect(subject.adaptive_icon?).to be_falsey
+      end
     end
 
     context "app-release-unsigned.apk which is not signed" do
@@ -200,27 +208,43 @@ describe "AndroidApk" do
       end
     end
 
-    %w(vector-icon.apk vector-icon-v26.apk).each do |apk_name|
-      context "#{apk_name} whose icon is a vector file" do
-        let(:apk_filepath) { File.join(FIXTURE_DIR, apk_name) }
+    shared_examples :vector_icon_apk do
+      include_examples :analyzable
 
-        include_examples :analyzable
+      it "should have non-png icon" do
+        expect(subject.icon_file).not_to be_nil
+      end
 
-        it "should have non-png icon" do
-          expect(subject.icon_file).not_to be_nil
-        end
+      it "should have png icon" do
+        expect(subject.icon_file(nil, true)).not_to be_nil
+      end
 
-        it "should have png icon" do
-          expect(subject.icon_file(nil, true)).not_to be_nil
-        end
+      it "should return png icon by specific dpi" do
+        expect(subject.icon_file(240, true)).not_to be_nil
+      end
 
-        it "should return png icon by specific dpi" do
-          expect(subject.icon_file(240, true)).not_to be_nil
-        end
+      it "should be installable" do
+        expect(subject.installable?).to be_truthy
+      end
+    end
 
-        it "should be installable" do
-          expect(subject.installable?).to be_truthy
-        end
+    context "vector-icon.apk whose icon is a vector file" do
+      let(:apk_filepath) { File.join(FIXTURE_DIR, "vector-icon.apk") }
+
+      it_should_behave_like :vector_icon_apk
+
+      it "should not be adaptive icon" do
+        expect(subject.adaptive_icon?).to be_falsey
+      end
+    end
+
+    context "vector-icon-v26.apk whose icon is a vector file" do
+      let(:apk_filepath) { File.join(FIXTURE_DIR, "vector-icon-v26.apk") }
+
+      it_should_behave_like :vector_icon_apk
+
+      it "should be an adaptive icon" do
+        expect(subject.adaptive_icon?).to be_truthy
       end
     end
   end
