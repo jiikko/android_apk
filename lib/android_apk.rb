@@ -8,7 +8,17 @@ class AndroidApk
   attr_accessor :results, :label, :labels, :icon, :icons, :package_name, :version_code, :version_name, :sdk_version, :target_sdk_version, :filepath
 
   NOT_ALLOW_DUPLICATE_TAG_NAMES = %w(application).freeze
-  SUPPORTED_DPIS = %w(120 160 240 320 480 640).freeze
+
+  DPI_TO_NAME_MAP = {
+    120 => "ldpi",
+    160 => "mdpi",
+    240 => "hdpi",
+    320 => "xhdpi",
+    480 => "xxhdpi",
+    640 => "xxxhdpi",
+  }.freeze
+
+  SUPPORTED_DPIS = DPI_TO_NAME_MAP.keys.freeze
 
   class AndroidManifestValidateError < StandardError; end
 
@@ -83,24 +93,9 @@ class AndroidApk
   # dpi to android drawable resource config name
   #
   # @param [Integer] dpi one of (see SUPPORTED_DPIS)
-  # @return [String] e.g. ldpi
+  # @return [String] (see SUPPORTED_DPIS). Return "xxxhdpi" if (see dpi) is not in (see SUPPORTED_DPIS)
   def dpi_str(dpi)
-    case dpi.to_i
-    when 120
-      "ldpi"
-    when 160
-      "mdpi"
-    when 240
-      "hdpi"
-    when 320
-      "xhdpi"
-    when 480
-      "xxhdpi"
-    when 640
-      "xxxhdpi"
-    else
-      "xxxhdpi"
-    end
+    DPI_TO_NAME_MAP[dpi.to_i] || "xxxhdpi"
   end
 
   # Whether or not this apk is installable
@@ -188,7 +183,9 @@ class AndroidApk
       key, value = _parse_line(line)
       next if key.nil?
 
-      if vars.key?(key) && allow_duplicate?(key)
+      if vars.key?(key)
+        reject_illegal_duplicated_key!(key)
+
         if vars[key].kind_of?(Hash) and value.kind_of?(Hash)
           vars[key].merge(value)
         else
@@ -212,9 +209,7 @@ class AndroidApk
 
   # @param [String] key a key of AndroidManifest.xml
   # @raise [AndroidManifestValidateError] if a key is found in (see NOT_ALLOW_DUPLICATE_TAG_NAMES)
-  def self.allow_duplicate?(key)
+  def self.reject_illegal_duplicated_key!(key)
     raise AndroidManifestValidateError, "Duplication of #{key} tag is not allowed" if NOT_ALLOW_DUPLICATE_TAG_NAMES.include?(key)
-
-    true
   end
 end
