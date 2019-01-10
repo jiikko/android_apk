@@ -215,10 +215,6 @@ describe "AndroidApk" do
         expect(subject.icon_file).not_to be_nil
       end
 
-      it "should have png icon" do
-        expect(subject.icon_file(nil, true)).not_to be_nil
-      end
-
       it "should return png icon by specific dpi" do
         expect(subject.icon_file(240, true)).not_to be_nil
       end
@@ -233,18 +229,40 @@ describe "AndroidApk" do
 
       it_should_behave_like :vector_icon_apk
 
+      it "should have png icon" do
+        expect(subject.icon_file(nil, true)).not_to be_nil
+      end
+
       it "should not be adaptive icon" do
         expect(subject.adaptive_icon?).to be_falsey
       end
     end
 
-    context "vector-icon-v26.apk whose icon is a vector file" do
+    context "vector-icon-v26.apk whose icon is an adaptive icon" do
       let(:apk_filepath) { File.join(FIXTURE_DIR, "vector-icon-v26.apk") }
 
       it_should_behave_like :vector_icon_apk
 
+      it "should have png icon" do
+        expect(subject.icon_file(nil, true)).not_to be_nil
+      end
+
       it "should be an adaptive icon" do
         expect(subject.adaptive_icon?).to be_truthy
+      end
+    end
+
+    context "vector-icon-v26-non-adaptive-icon.apk whose icon is not an adaptive icon" do
+      let(:apk_filepath) { File.join(FIXTURE_DIR, "vector-icon-v26-non-adaptive-icon.apk") }
+
+      it_should_behave_like :vector_icon_apk
+
+      it "should not have png icon" do
+        expect(subject.icon_file(nil, true)).to be_nil
+      end
+
+      it "should be an adaptive icon" do
+        expect(subject.adaptive_icon?).to be_falsey
       end
     end
   end

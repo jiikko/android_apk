@@ -93,6 +93,9 @@ class AndroidApk
     end
   end
 
+  # whether or not this apk supports adaptive icon
+  #
+  # @return [Boolean]
   def adaptive_icon?
     if self.icon.end_with?(".xml") && self.icon.start_with?("res/mipmap-anydpi-v26/")
       adaptive_icon_path = "res/mipmap-xxxhdpi-v4/#{File.basename(self.icon).gsub(/\.xml\Z/, '.png')}"
