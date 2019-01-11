@@ -16,7 +16,7 @@ rescue Bundler::BundlerError => e
 end
 
 RSpec::Core::RakeTask.new(:specs) do |task|
-  task.pattern = "spec/**/*.rb"
+  task.pattern = "spec/**{,/*/**}/*_spec.rb"
 
   raise "you need to have aapt in PATH" unless File.executable?(`which aapt`.chomp)
 end
@@ -31,11 +31,11 @@ end
 
 desc "Run RuboCop on the lib/specs directory"
 RuboCop::RakeTask.new(:rubocop) do |task|
-  task.patterns = %w(lib/**/*.rb spec/**/*.rb)
+  task.patterns = %w(lib/**{,/*/**}/*.rb spec/**{,/*/**}/*.rb)
 end
 
 RSpec::Core::RakeTask.new(:rcov) do |task|
-  task.pattern = "spec/**/*_spec.rb"
+  task.pattern = "spec/**{,/*/**}/*_spec.rb"
   task.rcov = true
 end
 
@@ -43,5 +43,5 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_dir = "rdoc"
   rdoc.title = "android_apk #{AndroidApk::VERSION}"
   rdoc.rdoc_files.include("README.md")
-  rdoc.rdoc_files.include("lib/**/*.rb")
+  rdoc.rdoc_files.include("lib/**{,/*/**}/*.rb")
 end

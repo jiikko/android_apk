@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'fileutils'
+require "fileutils"
 require "open3"
 require "shellwords"
 require "tmpdir"
@@ -94,10 +94,11 @@ class AndroidApk
 
       Zip::File.open(self.filepath) do |zip_file|
         content = zip_file.find_entry(self.icon)&.get_input_stream&.read
+        return nil if content.nil?
 
         File.open(output_to, "w") do |f|
           f.write(content)
-        end if content
+        end
       end
 
       return nil unless File.exist?(output_to)
