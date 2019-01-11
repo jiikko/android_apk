@@ -3,6 +3,7 @@
 require "tmpdir"
 require "shellwords"
 require "open3"
+require "zip"
 
 class AndroidApk
   attr_accessor :results, :label, :labels, :icon, :icons, :package_name, :version_code, :version_name, :sdk_version, :target_sdk_version, :filepath
@@ -28,6 +29,8 @@ class AndroidApk
   # @raise [AndroidManifestValidateError] if AndroidManifest.xml has multiple application tags.
   # @return [AndroidApk, nil] An instance of AndroidApk will be returned if no problem exists while analyzing. Otherwise nil.
   def self.analyze(filepath)
+    @current_warn_invalid_date = Zip.warn_invalid_date
+
     return nil unless File.exist?(filepath)
 
     apk = AndroidApk.new
@@ -88,6 +91,23 @@ class AndroidApk
 
       return File.new(path, "r")
     end
+  end
+
+  # whether or not this apk supports adaptive icon
+  #
+  # @return [Boolean]
+  def adaptive_icon?
+    Zip.warn_invalid_date = false
+
+    if self.icon.end_with?(".xml") && self.icon.start_with?("res/mipmap-anydpi-v26/")
+      adaptive_icon_path = "res/mipmap-xxxhdpi-v4/#{File.basename(self.icon).gsub(/\.xml\Z/, '.png')}"
+
+      Zip::File.open(self.filepath) do |zip_file|
+        !zip_file.find_entry(adaptive_icon_path).nil?
+      end
+    end
+  ensure
+    Zip.warn_invalid_date = @current_warn_invalid_date
   end
 
   # dpi to android drawable resource config name
