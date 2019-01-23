@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-require "tmpdir"
-require "shellwords"
+require "fileutils"
 require "open3"
+require "shellwords"
+require "tmpdir"
 require "zip"
 
 class AndroidApk
@@ -21,7 +22,8 @@ class AndroidApk
 
   SUPPORTED_DPIS = DPI_TO_NAME_MAP.keys.freeze
 
-  class AndroidManifestValidateError < StandardError; end
+  class AndroidManifestValidateError < StandardError
+  end
 
   # Do analyze the given apk file. Analyzed apk does not mean *valid*.
   #
@@ -75,6 +77,8 @@ class AndroidApk
   # @param [Boolean] want_png request a png icon expressly
   # @return [File, nil] an application icon file object in temp dir
   def icon_file(dpi = nil, want_png = false)
+    Zip.warn_invalid_date = false
+
     icon = dpi ? self.icons[dpi.to_i] : self.icon
     return nil if icon.empty?
 
@@ -84,13 +88,25 @@ class AndroidApk
     end
 
     Dir.mktmpdir do |dir|
-      command = "unzip #{self.filepath.shellescape} #{icon.shellescape} -d #{dir.shellescape} 2>&1"
-      `#{command}`
-      path = dir + "/" + icon
-      return nil unless File.exist?(path)
+      output_to = File.join(dir, self.icon)
 
-      return File.new(path, "r")
+      FileUtils.mkdir_p(File.dirname(output_to))
+
+      Zip::File.open(self.filepath) do |zip_file|
+        content = zip_file.find_entry(self.icon)&.get_input_stream&.read
+        return nil if content.nil?
+
+        File.open(output_to, "w") do |f|
+          f.write(content)
+        end
+      end
+
+      return nil unless File.exist?(output_to)
+
+      return File.new(output_to, "r")
     end
+  ensure
+    Zip.warn_invalid_date = @current_warn_invalid_date
   end
 
   # whether or not this apk supports adaptive icon
