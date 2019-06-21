@@ -88,12 +88,12 @@ class AndroidApk
     end
 
     Dir.mktmpdir do |dir|
-      output_to = File.join(dir, self.icon)
+      output_to = File.join(dir, icon)
 
       FileUtils.mkdir_p(File.dirname(output_to))
 
       Zip::File.open(self.filepath) do |zip_file|
-        content = zip_file.find_entry(self.icon)&.get_input_stream&.read
+        content = zip_file.find_entry(icon)&.get_input_stream&.read
         return nil if content.nil?
 
         File.open(output_to, "w") do |f|
