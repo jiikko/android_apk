@@ -17,9 +17,11 @@ describe "AndroidApk" do
     end
 
     it "should not raise any error when getting an icon file" do
+      max_icon = (subject.icons.keys - [65_534, 65_535]).max
+
       expect { subject.icon_file }.not_to raise_exception
-      expect { subject.icon_file(subject.icons.max, false) }.not_to raise_exception
-      expect { subject.icon_file(subject.icons.max, true) }.not_to raise_exception
+      expect { subject.icon_file(max_icon, false) }.not_to raise_exception
+      expect { subject.icon_file(max_icon, true) }.not_to raise_exception
     end
   end
 
