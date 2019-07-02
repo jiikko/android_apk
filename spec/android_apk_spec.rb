@@ -15,6 +15,12 @@ describe "AndroidApk" do
     it "should be analyzable" do
       expect(subject).not_to be_nil
     end
+
+    it "should not raise any error when getting an icon file" do
+      expect { subject.icon_file }.not_to raise_exception
+      expect { subject.icon_file(subject.icons.max, false) }.not_to raise_exception
+      expect { subject.icon_file(subject.icons.max, true) }.not_to raise_exception
+    end
   end
 
   context "if invalid sample apk files are given" do

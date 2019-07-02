@@ -31,8 +31,6 @@ class AndroidApk
   # @raise [AndroidManifestValidateError] if AndroidManifest.xml has multiple application tags.
   # @return [AndroidApk, nil] An instance of AndroidApk will be returned if no problem exists while analyzing. Otherwise nil.
   def self.analyze(filepath)
-    @current_warn_invalid_date = Zip.warn_invalid_date
-
     return nil unless File.exist?(filepath)
 
     apk = AndroidApk.new
@@ -77,10 +75,8 @@ class AndroidApk
   # @param [Boolean] want_png request a png icon expressly
   # @return [File, nil] an application icon file object in temp dir
   def icon_file(dpi = nil, want_png = false)
-    Zip.warn_invalid_date = false
-
     icon = dpi ? self.icons[dpi.to_i] : self.icon
-    return nil if icon.empty?
+    return nil if icon.nil? || icon.empty?
 
     if want_png && icon.end_with?(".xml")
       dpis = dpi_str(dpi)
@@ -105,16 +101,12 @@ class AndroidApk
 
       return File.new(output_to, "r")
     end
-  ensure
-    Zip.warn_invalid_date = @current_warn_invalid_date
   end
 
   # whether or not this apk supports adaptive icon
   #
   # @return [Boolean]
   def adaptive_icon?
-    Zip.warn_invalid_date = false
-
     if self.icon.end_with?(".xml") && self.icon.start_with?("res/mipmap-anydpi-v26/")
       adaptive_icon_path = "res/mipmap-xxxhdpi-v4/#{File.basename(self.icon).gsub(/\.xml\Z/, '.png')}"
 
@@ -122,8 +114,6 @@ class AndroidApk
         !zip_file.find_entry(adaptive_icon_path).nil?
       end
     end
-  ensure
-    Zip.warn_invalid_date = @current_warn_invalid_date
   end
 
   # dpi to android drawable resource config name
