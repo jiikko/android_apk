@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
 
   spec.extra_rdoc_files = %w(LICENSE.txt README.md)
 
-  spec.add_dependency 'rubyzip', '>= 1.0.0'
+  spec.add_dependency "rubyzip", ">= 1.2.3"
 
   # General ruby development
   spec.add_development_dependency "bundler", "~> 1.3"

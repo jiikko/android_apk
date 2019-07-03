@@ -1,0 +1,9 @@
+version: '3.7'
+services:
+  android_apk:
+    build:
+      context: .
+    command: /bin/bash
+    volumes:
+      - .:/android_apk
+    tty: true
