@@ -7,7 +7,25 @@ require "tmpdir"
 require "zip"
 
 class AndroidApk
-  attr_accessor :results, :label, :labels, :icon, :icons, :package_name
+  # Dump result which was parsed manually
+  # @return [Hash] Return a parsed result of aapt dump
+  attr_accessor :results
+
+  # Application label a.k.a application name in the default resource
+  # @return [String] Return a value which is defined in AndroidManifest.xml
+  attr_accessor :label
+
+  # Application labels a.k.a application name in available resources
+  # @return [Hash] Return a hash based on AndroidManifest.xml
+  attr_accessor :labels
+
+  # Application icon's path
+  # @return [String] Return a relative path of this apk's icon
+  attr_accessor :icon
+
+  # Application icon paths for all densities
+  # @return [String] Return a hash of relative paths
+  attr_accessor :icons
 
   # Package name of this apk
   # @return [String] Return a value which is defined in AndroidManifest.xml
@@ -66,8 +84,6 @@ class AndroidApk
 
   SUPPORTED_DPIS = DPI_TO_NAME_MAP.keys.freeze
 
-  attr_accessor :vars
-
   module Reason
     UNVERIFIED = :unverified
     TEST_ONLY = :test_only
@@ -95,7 +111,6 @@ class AndroidApk
     apk.filepath = filepath
     apk.results = results
     vars = _parse_aapt(results)
-    apk.vars = vars
 
     # application info
     apk.label = vars["application-label"]
