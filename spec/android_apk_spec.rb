@@ -347,24 +347,23 @@ describe "AndroidApk" do
       end
     end
 
-
     context "v2-only-sign-with-min-sdk-24.apk which is signed by only v2 scheme" do
-      let(:apk_filepath) { File.join(FIXTURE_DIR, 'v2-only-sign-with-min-sdk-24.apk') }
+      let(:apk_filepath) { File.join(FIXTURE_DIR, "v2-only-sign-with-min-sdk-24.apk") }
 
       include_examples :v2_only_signed
 
-      it 'should have 24 as sdk version' do
-        expect(subject.sdk_version).to eq('24')
+      it "should have 24 as sdk version" do
+        expect(subject.sdk_version).to eq("24")
       end
     end
 
     context "v2-only-sign-with-lower-min-sdk.apk which is signed by only v2 scheme" do
-      let(:apk_filepath) { File.join(FIXTURE_DIR, 'v2-only-sign-with-lower-min-sdk.apk') }
+      let(:apk_filepath) { File.join(FIXTURE_DIR, "v2-only-sign-with-lower-min-sdk.apk") }
 
       include_examples :v2_only_signed
 
-      it 'should have 14 as sdk version' do
-        expect(subject.sdk_version).to eq('14')
+      it "should have 14 as sdk version" do
+        expect(subject.sdk_version).to eq("14")
       end
     end
   end

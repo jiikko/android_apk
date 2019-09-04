@@ -115,7 +115,7 @@ class AndroidApk
     # application info
     apk.label = vars["application-label"]
     apk.icon = vars["application"]["icon"]
-    apk.test_only = vars.has_key?("testOnly='-1'")
+    apk.test_only = vars.key?("testOnly='-1'")
 
     # package
 
@@ -135,32 +135,8 @@ class AndroidApk
       apk.labels[Regexp.last_match(1)] = vars[k] if k =~ /^application-label-(\S+)$/
     end
 
-    # Use target_sdk_version as min sdk version!
-    # Because some of apks are signed by only v2 scheme even though they have 23 and lower min sdk version
-    # For now, we use Signer #1 until multiple signers come
-    print_certs_command = "apksigner verify --min-sdk-version=#{apk.target_sdk_version} --print-certs #{filepath.shellescape} | grep 'Signer #1' | grep 'SHA-1'"
-    certs_hunk, _, exit_status = Open3.capture3(print_certs_command)
-
-    apk.verified = exit_status == 0
-
-    if exit_status != 0 || certs_hunk.nil?
-      # Use a previous method as a fallback because apksigner cannot get a signature from an non installable apk
-      print_certs_command = "unzip -p #{filepath.shellescape} META-INF/*.RSA META-INF/*.DSA | keytool -printcert | grep SHA1:"
-      certs_hunk, _, exit_status = Open3.capture3(print_certs_command)
-    end
-
-    if exit_status == 0 && !certs_hunk.nil?
-      signatures = certs_hunk.scan(/(?:[0-9a-zA-Z]{2}:?){20}/)
-      apk.signature = signatures[0].delete(":").downcase if signatures.length == 1
-    end
-
-    if apk.icon.end_with?(".xml") && apk.icon.start_with?("res/mipmap-anydpi-v26/")
-      adaptive_icon_path = "res/mipmap-xxxhdpi-v4/#{File.basename(apk.icon).gsub(/\.xml\Z/, '.png')}"
-
-      Zip::File.open(filepath) do |zip_file|
-        apk.adaptive_icon = !zip_file.find_entry(adaptive_icon_path).nil?
-      end
-    end
+    read_signature(apk, filepath)
+    read_adaptive_icon(apk, filepath)
 
     return apk
   end
@@ -312,5 +288,36 @@ class AndroidApk
   # @raise [AndroidManifestValidateError] if a key is found in (see NOT_ALLOW_DUPLICATE_TAG_NAMES)
   def self.reject_illegal_duplicated_key!(key)
     raise AndroidManifestValidateError, "Duplication of #{key} tag is not allowed" if NOT_ALLOW_DUPLICATE_TAG_NAMES.include?(key)
+  end
+
+  def self.read_signature(apk, filepath)
+    # Use target_sdk_version as min sdk version!
+    # Because some of apks are signed by only v2 scheme even though they have 23 and lower min sdk version
+    # For now, we use Signer #1 until multiple signers come
+    print_certs_command = "apksigner verify --min-sdk-version=#{apk.target_sdk_version} --print-certs #{filepath.shellescape} | grep 'Signer #1' | grep 'SHA-1'"
+    certs_hunk, _, exit_status = Open3.capture3(print_certs_command)
+
+    apk.verified = exit_status.success?
+
+    if !exit_status.success? || certs_hunk.nil?
+      # Use a previous method as a fallback because apksigner cannot get a signature from an non installable apk
+      print_certs_command = "unzip -p #{filepath.shellescape} META-INF/*.RSA META-INF/*.DSA | keytool -printcert | grep SHA1:"
+      certs_hunk, _, exit_status = Open3.capture3(print_certs_command)
+    end
+
+    if exit_status.success? && !certs_hunk.nil?
+      signatures = certs_hunk.scan(/(?:[0-9a-zA-Z]{2}:?){20}/)
+      apk.signature = signatures[0].delete(":").downcase if signatures.length == 1
+    end
+  end
+
+  def self.read_adaptive_icon(apk, filepath)
+    if apk.icon.end_with?(".xml") && apk.icon.start_with?("res/mipmap-anydpi-v26/")
+      adaptive_icon_path = "res/mipmap-xxxhdpi-v4/#{File.basename(apk.icon).gsub(/\.xml\Z/, '.png')}"
+
+      Zip::File.open(filepath) do |zip_file|
+        apk.adaptive_icon = !zip_file.find_entry(adaptive_icon_path).nil?
+      end
+    end
   end
 end
