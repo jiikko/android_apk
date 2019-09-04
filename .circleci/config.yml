@@ -58,7 +58,7 @@ commands: &commands
           command: |
             if ! [[ -d $ANDROID_HOME ]]; then
               mkdir -p $ANDROID_HOME
-              cp -fr docker/android/licenses $ANDROID_HOME/licenses
+              cp -fr docker/licenses $ANDROID_HOME/licenses
               wget -q -O sdk-tools.zip "https://dl.google.com/android/repository/sdk-tools-linux-<< parameters.zip_hash >>.zip"
               unzip -qq sdk-tools.zip -d $ANDROID_HOME
               rm sdk-tools.zip
