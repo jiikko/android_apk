@@ -1,26 +1,20 @@
 #Android APK
 
-[![Circle CI](https://circleci.com/gh/kyoro/android_apk.svg?style=svg)](https://circleci.com/gh/kyoro/android_apk)
+[![Build Status](https://travis-ci.org/DeployGate/android_apk.svg?branch=master)](https://travis-ci.org/DeployGate/android_apk)
 
 This gem allows you to analyze Android application package file (*i.e.* .apk files.)
 
 
 ## Prerequisite
 
-You must set PATH to `$ANDROID_SDK_HOME/platform-tools` and make sure the `aapt` command executable.
+Please make sure the `aapt` and `apksigner` command executable.
 
 ## Installation
 
-Append to Gemfile:
+Add this gem to your Gemfile
 
 ```
 gem 'android_apk'
-```
-
-or run on your terminal:
-
-```
-gem install android_apk
 ```
 
 ## Usage
@@ -31,10 +25,10 @@ require 'android_apk'
 apk = AndroidApk.analyze("/path/to/apkfile.apk")
 
 apk.sdk_version
-# => 14
+# => "14"
 
 apk.target_sdk_version
-# => 26
+# => "26"
 
 apk.label
 # => "Sample"
@@ -43,7 +37,7 @@ apk.package_name
 # => "com.example.sample"
 
 apk.version_code
-# => 1
+# => "1"
 
 apk.version_name
 # => "1.0"
@@ -76,15 +70,6 @@ apk.dpi_str(240)
 # => "hdpi"
 ```
 
+Under [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-# License
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-Copyright &copy; 2017 Kyosuke Inoue <kyoro@hakamastyle.net>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+Originally created by Kyosuke Inoue <kyoro@hakamastyle.net>

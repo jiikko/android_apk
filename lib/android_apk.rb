@@ -7,7 +7,51 @@ require "tmpdir"
 require "zip"
 
 class AndroidApk
-  attr_accessor :results, :label, :labels, :icon, :icons, :package_name, :version_code, :version_name, :sdk_version, :target_sdk_version, :filepath
+  attr_accessor :results, :label, :labels, :icon, :icons, :package_name
+
+  # Package name of this apk
+  # @return [String] Return a value which is defined in AndroidManifest.xml
+  attr_accessor :package_name
+
+  # Version code of this apk
+  # @return [String] Return a value which is defined in AndroidManifest.xml
+  attr_accessor :version_code
+
+  # Version name of this apk
+  # @return [String] Return a value which is defined in AndroidManifest.xml
+  attr_accessor :version_name
+
+  # Min sdk version of this apk
+  # @return [String] Return Integer string which is defined in AndroidManifest.xml
+  attr_accessor :sdk_version
+
+  # Target sdk version of this apk
+  # @return [String] Return Integer string which is defined in AndroidManifest.xml
+  attr_accessor :target_sdk_version
+
+  # The SHA-1 signature of this apk
+  # @return [String, nil] Return nil if cannot extract sha1 hash, otherwise the value will be returned.
+  attr_accessor :signature
+
+  # Check whether or not this apk's icon is an adaptive icon
+  # @return [Boolean] Return true if this apk has an adaptive icon, otherwise false.
+  attr_accessor :adaptive_icon
+  alias adaptive_icon? adaptive_icon
+
+  # Check whether or not this apk is verified
+  # @return [Boolean] Return true if this apk is verified, otherwise false.
+  attr_accessor :verified
+  alias verified? verified
+
+  # Check whether or not this apk is a test mode
+  # @return [Boolean] Return true if this apk is a test mode, otherwise false.
+  attr_accessor :test_only
+  alias test_only? test_only
+
+  # An apk file which has been analyzed
+  # @deprecated because a file might be moved/removed
+  # @return [String] Return a file path of this apk file
+  attr_accessor :filepath
 
   NOT_ALLOW_DUPLICATE_TAG_NAMES = %w(application).freeze
 
@@ -21,6 +65,14 @@ class AndroidApk
   }.freeze
 
   SUPPORTED_DPIS = DPI_TO_NAME_MAP.keys.freeze
+
+  attr_accessor :vars
+
+  module Reason
+    UNVERIFIED = :unverified
+    TEST_ONLY = :test_only
+    UNSIGNED = :unsigned
+  end
 
   class AndroidManifestValidateError < StandardError
   end
@@ -43,10 +95,12 @@ class AndroidApk
     apk.filepath = filepath
     apk.results = results
     vars = _parse_aapt(results)
+    apk.vars = vars
 
     # application info
     apk.label = vars["application-label"]
     apk.icon = vars["application"]["icon"]
+    apk.test_only = vars.has_key?("testOnly='-1'")
 
     # package
 
@@ -64,6 +118,33 @@ class AndroidApk
     vars.each_key do |k|
       apk.icons[Regexp.last_match(1).to_i] = vars[k] if k =~ /^application-icon-(\d+)$/
       apk.labels[Regexp.last_match(1)] = vars[k] if k =~ /^application-label-(\S+)$/
+    end
+
+    # Use target_sdk_version as min sdk version!
+    # Because some of apks are signed by only v2 scheme even though they have 23 and lower min sdk version
+    # For now, we use Signer #1 until multiple signers come
+    print_certs_command = "apksigner verify --min-sdk-version=#{apk.target_sdk_version} --print-certs #{filepath.shellescape} | grep 'Signer #1' | grep 'SHA-1'"
+    certs_hunk, _, exit_status = Open3.capture3(print_certs_command)
+
+    apk.verified = exit_status == 0
+
+    if exit_status != 0 || certs_hunk.nil?
+      # Use a previous method as a fallback because apksigner cannot get a signature from an non installable apk
+      print_certs_command = "unzip -p #{filepath.shellescape} META-INF/*.RSA META-INF/*.DSA | keytool -printcert | grep SHA1:"
+      certs_hunk, _, exit_status = Open3.capture3(print_certs_command)
+    end
+
+    if exit_status == 0 && !certs_hunk.nil?
+      signatures = certs_hunk.scan(/(?:[0-9a-zA-Z]{2}:?){20}/)
+      apk.signature = signatures[0].delete(":").downcase if signatures.length == 1
+    end
+
+    if apk.icon.end_with?(".xml") && apk.icon.start_with?("res/mipmap-anydpi-v26/")
+      adaptive_icon_path = "res/mipmap-xxxhdpi-v4/#{File.basename(apk.icon).gsub(/\.xml\Z/, '.png')}"
+
+      Zip::File.open(filepath) do |zip_file|
+        apk.adaptive_icon = !zip_file.find_entry(adaptive_icon_path).nil?
+      end
     end
 
     return apk
@@ -103,19 +184,6 @@ class AndroidApk
     end
   end
 
-  # whether or not this apk supports adaptive icon
-  #
-  # @return [Boolean]
-  def adaptive_icon?
-    if self.icon.end_with?(".xml") && self.icon.start_with?("res/mipmap-anydpi-v26/")
-      adaptive_icon_path = "res/mipmap-xxxhdpi-v4/#{File.basename(self.icon).gsub(/\.xml\Z/, '.png')}"
-
-      Zip::File.open(self.filepath) do |zip_file|
-        !zip_file.find_entry(adaptive_icon_path).nil?
-      end
-    end
-  end
-
   # dpi to android drawable resource config name
   #
   # @param [Integer] dpi one of (see SUPPORTED_DPIS)
@@ -124,12 +192,22 @@ class AndroidApk
     DPI_TO_NAME_MAP[dpi.to_i] || "xxxhdpi"
   end
 
-  # Whether or not this apk is installable
-  #
-  # @return [Boolean, nil] this apk is installable if true, otherwise not installable.
+  # Experimental API!
+  # Check whether or not this apk is installable
+  # @return [Boolean] Return true if this apk is installable, otherwise false.
   def installable?
-    # TODO: add not testable
-    signed?
+    uninstallable_reasons.empty?
+  end
+
+  # Experimental API!
+  # Reasons why this apk is not installable
+  # @return [Array<Symbol>] Return non-empty symbol array which contain reasons, otherwise an empty array.
+  def uninstallable_reasons
+    reasons = []
+    reasons << Reason::UNVERIFIED unless verified?
+    reasons << Reason::UNSIGNED unless signed?
+    reasons << Reason::TEST_ONLY if test_only?
+    reasons
   end
 
   # Whether or not this apk is signed but this depends on (see signature)
@@ -137,24 +215,6 @@ class AndroidApk
   # @return [Boolean, nil] this apk is signed if true, otherwise not signed.
   def signed?
     !signature.nil?
-  end
-
-  # The SHA-1 signature of this apk
-  #
-  # @return [String, nil] Return nil if cannot extract sha1 hash, otherwise the value will be returned.
-  def signature
-    return @signature if defined? @signature
-
-    @signature = lambda {
-      command = "unzip -p #{self.filepath.shellescape} META-INF/*.RSA META-INF/*.DSA | keytool -printcert | grep SHA1:"
-      output, _, status = Open3.capture3(command)
-      return if status != 0 || output.nil? || !output.index("SHA1:")
-
-      val = output.scan(/(?:[0-9A-Z]{2}:?){20}/)
-      return nil if val.nil? || val.length != 1
-
-      return val[0].delete(":").downcase
-    }.call
   end
 
   # workaround for https://code.google.com/p/android/issues/detail?id=160847
