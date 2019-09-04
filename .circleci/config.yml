@@ -3,7 +3,7 @@ version: 2.1
 executors: &executors
   android_apk:
     docker:
-      - image: circleci/ruby:2.5.1
+      - image: circleci/ruby:2.5.1-node-browsers
     environment:
       ANDROID_HOME: /home/circleci/android
 
@@ -17,7 +17,6 @@ commands: &commands
     steps:
       - run: |
           echo "export REPOSITORY_ROOT=$(git rev-parse --show-toplevel)" >> $BASH_ENV
-          echo "export PATH=\"$PWD/.transart/tmp:\$PATH\"" >> $BASH_ENV
           echo "export PATH=\"\$REPOSITORY_ROOT/.circleci/bin:\$PATH\"" >> $BASH_ENV
   use_ruby_cache:
     parameters:
@@ -58,7 +57,7 @@ commands: &commands
           command: |
             if ! [[ -d $ANDROID_HOME ]]; then
               mkdir -p $ANDROID_HOME
-              cp -fr docker/licenses $ANDROID_HOME/licenses
+              cp -f docker/licenses $ANDROID_HOME/licenses
               wget -q -O sdk-tools.zip "https://dl.google.com/android/repository/sdk-tools-linux-<< parameters.zip_hash >>.zip"
               unzip -qq sdk-tools.zip -d $ANDROID_HOME
               rm sdk-tools.zip
