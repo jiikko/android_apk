@@ -3,6 +3,8 @@ services:
   android_apk:
     build:
       context: .
+      args:
+        BUILD_TOOLS_VERSION: "27.0.3"
     command: /bin/bash
     volumes:
       - .:/android_apk
