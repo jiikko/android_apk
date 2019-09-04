@@ -313,6 +313,10 @@ describe "AndroidApk" do
         expect(subject.signature).to eq("89f20f82fad1be0f69d273bbdd62503e692d61b0")
       end
 
+      it "should be signed" do
+        expect(subject.signed?).to be_truthy
+      end
+
       it "should be test_only?" do
         expect(subject.test_only?).to be_truthy
       end
@@ -323,6 +327,44 @@ describe "AndroidApk" do
 
       it "should have test only state" do
         expect(subject.uninstallable_reasons).to include(AndroidApk::Reason::TEST_ONLY)
+      end
+    end
+
+    shared_examples_for :v2_only_signed do |apk_name|
+      include_examples :analyzable
+      include_examples :not_test_only
+
+      it "should have signature" do
+        expect(subject.signature).to eq("89f20f82fad1be0f69d273bbdd62503e692d61b0")
+      end
+
+      it "should be signed" do
+        expect(subject.signed?).to be_truthy
+      end
+
+      it "should be installable" do
+        expect(subject.installable?).to be_truthy
+      end
+    end
+
+
+    context "v2-only-sign-with-min-sdk-24.apk which is signed by only v2 scheme" do
+      let(:apk_filepath) { File.join(FIXTURE_DIR, 'v2-only-sign-with-min-sdk-24.apk') }
+
+      include_examples :v2_only_signed
+
+      it 'should have 24 as sdk version' do
+        expect(subject.sdk_version).to eq('24')
+      end
+    end
+
+    context "v2-only-sign-with-lower-min-sdk.apk which is signed by only v2 scheme" do
+      let(:apk_filepath) { File.join(FIXTURE_DIR, 'v2-only-sign-with-lower-min-sdk.apk') }
+
+      include_examples :v2_only_signed
+
+      it 'should have 14 as sdk version' do
+        expect(subject.sdk_version).to eq('14')
       end
     end
   end
