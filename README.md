@@ -1,6 +1,6 @@
 #Android APK
 
-[![Build Status](https://travis-ci.org/DeployGate/android_apk.svg?branch=master)](https://travis-ci.org/DeployGate/android_apk)
+[![CircleCI](https://circleci.com/gh/DeployGate/android_apk.svg?style=svg)](https://circleci.com/gh/DeployGate/android_apk)
 
 This gem allows you to analyze Android application package file (*i.e.* .apk files.)
 
