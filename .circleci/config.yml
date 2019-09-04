@@ -1,0 +1,138 @@
+version: 2.1
+
+executors: &executors
+  android_apk:
+    docker:
+      - image: circleci/ruby:2.5.1-node-browsers
+    environment:
+      ANDROID_HOME: /home/circleci/android
+
+commands: &commands
+  init_git:
+    steps:
+      - run: |
+          git config --global user.email "services@deploygate.com"
+          git config --global user.name "kaz-bot"
+  init_bash:
+    steps:
+      - run: |
+          echo "export REPOSITORY_ROOT=$(git rev-parse --show-toplevel)" >> $BASH_ENV
+          echo "export PATH=\"\$REPOSITORY_ROOT/.circleci/bin:\$PATH\"" >> $BASH_ENV
+  use_ruby_cache:
+    parameters:
+      key-prefix:
+        type: string
+      gemfile-dir:
+        type: string
+      steps:
+        type: steps
+        default: []
+      cache_version:
+        type: string
+        default: v1
+    steps:
+      - run: md5sum <(ruby -v) > ./ruby-version.md5
+      - restore_cache:
+          keys:
+          - ruby-cache-{{ checksum "./ruby-version.md5" }}-<< parameters.key-prefix >>-<< parameters.cache_version >>-{{ checksum "<< parameters.gemfile-dir >>/Gemfile.lock" }}
+          - ruby-cache-{{ checksum "./ruby-version.md5" }}-<< parameters.key-prefix >>-<< parameters.cache_version >>-
+      - run: bundle check || bundle install --path=vendor/bundle --retry 3 --clean --jobs=4
+      - save_cache:
+          paths:
+          - << parameters.gemfile-dir >>/vendor/bundle
+          key: ruby-cache-{{ checksum "./ruby-version.md5" }}-<< parameters.key-prefix >>-<< parameters.cache_version >>-{{ checksum "<< parameters.gemfile-dir >>/Gemfile.lock" }}
+      - << parameters.steps >>
+  download_sdk:
+    parameters:
+      zip_hash:
+        type: string
+      build_tools:
+        type: string
+    steps:
+      - restore_cache:
+          keys:
+          - android-sdk-cache-<< parameters.zip_hash >>-<< parameters.build_tools >>
+      - run:
+          name:
+          command: |
+            if ! [[ -d $ANDROID_HOME ]]; then
+              mkdir -p $ANDROID_HOME
+              cp -f docker/licenses $ANDROID_HOME/licenses
+              wget -q -O sdk-tools.zip "https://dl.google.com/android/repository/sdk-tools-linux-<< parameters.zip_hash >>.zip"
+              unzip -qq sdk-tools.zip -d $ANDROID_HOME
+              rm sdk-tools.zip
+              yes | $ANDROID_HOME/tools/bin/sdkmanager "build-tools;<< parameters.build_tools >>" >/dev/null 2>&1 || echo "Failed but it's okay"
+            fi
+
+            ln -s $ANDROID_HOME/build-tools/<< parameters.build_tools >>/aapt $REPOSITORY_ROOT/.circleci/bin/aapt
+            ln -s $ANDROID_HOME/build-tools/<< parameters.build_tools >>/apksigner $REPOSITORY_ROOT/.circleci/bin/apksigner
+            type aapt
+            type apksigner
+      - save_cache:
+          paths:
+          - ~/android
+          key: android-sdk-cache-<< parameters.zip_hash >>-<< parameters.build_tools >>
+
+orbs:
+  scheduled:
+    commands: *commands
+    executors: *executors
+  android_apk:
+    commands: *commands
+    executors: *executors
+    jobs:
+      test:
+        working_directory: ~/android_apk
+        executor: android_apk
+        parameters:
+          after_merged:
+            type: boolean
+            default: false
+        steps:
+          - checkout:
+              path: ~/android_apk
+          - init_bash
+          - init_git
+          - download_sdk:
+              zip_hash: "4333796"
+              build_tools: "27.0.3"
+          - when:
+              condition: << parameters.after_merged >>
+              steps:
+                - run:
+                    name: Merge this branch to base branch
+                    command: |
+                      set -eu
+                      readonly base_branch="$(get_base_branch_ref.bash)"
+                      git fetch origin "$base_branch"
+                      git checkout "$base_branch"
+                      git merge --no-ff -m "circleci merged" "$CIRCLE_BRANCH"
+          - use_ruby_cache:
+              key-prefix: android_apk
+              gemfile-dir: ~/android_apk
+              steps:
+                - run: bundle exec rake spec
+
+aliases:
+  filters:
+    feature_branch_only: &feature_branch_only
+      filters:
+        branches:
+          ignore:
+            - master
+    only_master: &only_master
+      filters:
+        branches:
+          only:
+            - master
+
+workflows:
+  version: 2
+  on_commit:
+    jobs:
+      - android_apk/test:
+          name: test-on-feature-branch
+      - android_apk/test:
+          name: test-on-after-merged
+          after_merged: true
+          <<: *feature_branch_only

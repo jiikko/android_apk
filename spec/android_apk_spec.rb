@@ -64,11 +64,18 @@ describe "AndroidApk" do
   end
 
   context "if valid sample apk files are given" do
+    shared_examples_for :not_test_only do
+      it "should not test_only?" do
+        expect(subject.test_only?).to be_falsey
+      end
+    end
+
     %w(sample.apk sample\ with\ space.apk).each do |apk_name|
       context "#{apk_name} which is a very simple sample" do
         let(:apk_filepath) { File.join(FIXTURE_DIR, apk_name) }
 
         include_examples :analyzable
+        include_examples :not_test_only
 
         it "should have icon drawable" do
           expect(subject.icon).to eq("res/drawable-mdpi/ic_launcher.png")
@@ -120,6 +127,7 @@ describe "AndroidApk" do
       let(:apk_filepath) { File.join(FIXTURE_DIR, "BarcodeScanner4.2.apk") }
 
       include_examples :analyzable
+      include_examples :not_test_only
 
       it "should have icon drawable" do
         expect(subject.icon).to eq("res/drawable/launcher_icon.png")
@@ -173,6 +181,7 @@ describe "AndroidApk" do
       let(:apk_filepath) { File.join(FIXTURE_DIR, "app-release-unsigned.apk") }
 
       include_examples :analyzable
+      include_examples :not_test_only
 
       it "should not be signed" do
         expect(subject.signed?).to be_falsey
@@ -185,12 +194,17 @@ describe "AndroidApk" do
       it "should not be installable" do
         expect(subject.installable?).to be_falsey
       end
+
+      it "should have unsigned state" do
+        expect(subject.uninstallable_reasons).to include(AndroidApk::Reason::UNSIGNED)
+      end
     end
 
     context "UECExpress.apk which does not have icons" do
       let(:apk_filepath) { File.join(FIXTURE_DIR, "UECExpress.apk") }
 
       include_examples :analyzable
+      include_examples :not_test_only
 
       it "should be no icon file" do
         expect(subject.icon_file).to be_nil
@@ -206,6 +220,7 @@ describe "AndroidApk" do
       let(:apk_filepath) { File.join(FIXTURE_DIR, "dsa.apk") }
 
       include_examples :analyzable
+      include_examples :not_test_only
 
       it "should also return its signature" do
         expect(subject.signature).to eq("2d8068f79a5840cbce499b51821aaa6c775ff3ff")
@@ -218,6 +233,7 @@ describe "AndroidApk" do
 
     shared_examples :vector_icon_apk do
       include_examples :analyzable
+      include_examples :not_test_only
 
       it "should have non-png icon" do
         expect(subject.icon_file).not_to be_nil
@@ -225,10 +241,6 @@ describe "AndroidApk" do
 
       it "should return png icon by specific dpi" do
         expect(subject.icon_file(240, true)).not_to be_nil
-      end
-
-      it "should be installable" do
-        expect(subject.installable?).to be_truthy
       end
     end
 
@@ -244,6 +256,10 @@ describe "AndroidApk" do
       it "should not be adaptive icon" do
         expect(subject.adaptive_icon?).to be_falsey
       end
+
+      it "should be installable" do
+        expect(subject.installable?).to be_truthy
+      end
     end
 
     context "vector-icon-v26.apk whose icon is an adaptive icon" do
@@ -257,6 +273,10 @@ describe "AndroidApk" do
 
       it "should be an adaptive icon" do
         expect(subject.adaptive_icon?).to be_truthy
+      end
+
+      it "should be installable" do
+        expect(subject.installable?).to be_truthy
       end
     end
 
@@ -273,6 +293,77 @@ describe "AndroidApk" do
         it "should be an adaptive icon" do
           expect(subject.adaptive_icon?).to be_falsey
         end
+
+        it "should not be installable" do
+          expect(subject.installable?).to be_falsey
+        end
+
+        it "should have unverified state" do
+          expect(subject.uninstallable_reasons).to include(AndroidApk::Reason::UNVERIFIED)
+        end
+      end
+    end
+
+    context "test-only.apk which has a testOnly flag" do
+      let(:apk_filepath) { File.join(FIXTURE_DIR, "test-only.apk") }
+
+      include_examples :analyzable
+
+      it "should also return its signature" do
+        expect(subject.signature).to eq("89f20f82fad1be0f69d273bbdd62503e692d61b0")
+      end
+
+      it "should be signed" do
+        expect(subject.signed?).to be_truthy
+      end
+
+      it "should be test_only?" do
+        expect(subject.test_only?).to be_truthy
+      end
+
+      it "should not be installable" do
+        expect(subject.installable?).to be_falsey
+      end
+
+      it "should have test only state" do
+        expect(subject.uninstallable_reasons).to include(AndroidApk::Reason::TEST_ONLY)
+      end
+    end
+
+    shared_examples_for :v2_only_signed do |apk_name|
+      include_examples :analyzable
+      include_examples :not_test_only
+
+      it "should have signature" do
+        expect(subject.signature).to eq("89f20f82fad1be0f69d273bbdd62503e692d61b0")
+      end
+
+      it "should be signed" do
+        expect(subject.signed?).to be_truthy
+      end
+
+      it "should be installable" do
+        expect(subject.installable?).to be_truthy
+      end
+    end
+
+    context "v2-only-sign-with-min-sdk-24.apk which is signed by only v2 scheme" do
+      let(:apk_filepath) { File.join(FIXTURE_DIR, "v2-only-sign-with-min-sdk-24.apk") }
+
+      include_examples :v2_only_signed
+
+      it "should have 24 as sdk version" do
+        expect(subject.sdk_version).to eq("24")
+      end
+    end
+
+    context "v2-only-sign-with-lower-min-sdk.apk which is signed by only v2 scheme" do
+      let(:apk_filepath) { File.join(FIXTURE_DIR, "v2-only-sign-with-lower-min-sdk.apk") }
+
+      include_examples :v2_only_signed
+
+      it "should have 14 as sdk version" do
+        expect(subject.sdk_version).to eq("14")
       end
     end
   end
