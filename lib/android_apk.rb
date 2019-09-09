@@ -164,7 +164,7 @@ class AndroidApk
         content = zip_file.find_entry(icon)&.get_input_stream&.read
         return nil if content.nil?
 
-        File.open(output_to, "w") do |f|
+        File.open(output_to, "wb") do |f|
           f.write(content)
         end
       end
