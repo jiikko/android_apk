@@ -155,6 +155,17 @@ class AndroidApk
       icon.gsub! %r{res/(drawable|mipmap)-anydpi-(?:v\d+)/([^/]+)\.xml}, "res/\\1-#{dpis}-v4/\\2.png"
     end
 
+    # a fallback to a png file which is manually resolved
+    if want_png && icon.end_with?(".xml")
+      dpis = dpi_str(dpi)
+      icon.gsub! %r{res/(drawable|mipmap)/([^/]+)\.xml}, "res/\\1-#{dpis}-v4/\\2.png"
+    end
+
+    # we cannot prepare for any fallbacks
+    if want_png && icon.end_with?(".xml")
+      return nil
+    end
+
     Dir.mktmpdir do |dir|
       output_to = File.join(dir, icon)
 
@@ -164,7 +175,7 @@ class AndroidApk
         content = zip_file.find_entry(icon)&.get_input_stream&.read
         return nil if content.nil?
 
-        File.open(output_to, "wb") do |f|
+        File.open(output_to, "w") do |f|
           f.write(content)
         end
       end
