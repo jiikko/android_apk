@@ -323,6 +323,8 @@ class AndroidApk
     if exit_status.success? && !certs_hunk.nil?
       signatures = certs_hunk.scan(/(?:[0-9a-zA-Z]{2}:?){20}/)
       apk.signature = signatures[0].delete(":").downcase if signatures.length == 1
+    else
+      apk.signature = nil # make sure being nil
     end
   end
 
