@@ -309,7 +309,13 @@ class AndroidApk
     apk.verified = exit_status.success?
 
     if !exit_status.success? || certs_hunk.nil?
-      # Use a previous method as a fallback because apksigner cannot get a signature from an non installable apk
+      # For RSA or DSA encryption
+      print_certs_command = "unzip -p #{filepath.shellescape} META-INF/*.RSA META-INF/*.DSA | openssl pkcs7 -inform DER -text -print_certs | keytool -printcert | grep SHA1:"
+      certs_hunk, _, exit_status = Open3.capture3(print_certs_command)
+    end
+
+    if !exit_status.success? || certs_hunk.nil?
+      # Use a previous method as a fallback just in case
       print_certs_command = "unzip -p #{filepath.shellescape} META-INF/*.RSA META-INF/*.DSA | keytool -printcert | grep SHA1:"
       certs_hunk, _, exit_status = Open3.capture3(print_certs_command)
     end
@@ -317,6 +323,8 @@ class AndroidApk
     if exit_status.success? && !certs_hunk.nil?
       signatures = certs_hunk.scan(/(?:[0-9a-zA-Z]{2}:?){20}/)
       apk.signature = signatures[0].delete(":").downcase if signatures.length == 1
+    else
+      apk.signature = nil # make sure being nil
     end
   end
 
