@@ -310,7 +310,7 @@ class AndroidApk
 
     if !exit_status.success? || certs_hunk.nil?
       # For RSA or DSA encryption
-      print_certs_command = "openssl pkcs7 -inform DER -in <(unzip -p #{filepath.shellescape} META-INF/*.RSA META-INF/*.DSA) -print_certs | keytool -printcert | grep SHA1:"
+      print_certs_command = "unzip -p #{filepath.shellescape} META-INF/*.RSA META-INF/*.DSA | openssl pkcs7 -inform DER -text -print_certs | keytool -printcert | grep SHA1:"
       certs_hunk, _, exit_status = Open3.capture3(print_certs_command)
     end
 
