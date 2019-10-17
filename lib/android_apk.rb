@@ -330,6 +330,7 @@ class AndroidApk
 
   def self.read_adaptive_icon(apk, filepath)
     if apk.icon.end_with?(".xml") && apk.icon.start_with?("res/mipmap-anydpi-v26/")
+      "adaptive-icon"
       adaptive_icon_path = "res/mipmap-xxxhdpi-v4/#{File.basename(apk.icon).gsub(/\.xml\Z/, '.png')}"
 
       Zip::File.open(filepath) do |zip_file|

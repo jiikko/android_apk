@@ -5,8 +5,7 @@ require File.expand_path(File.dirname(__FILE__) + "/spec_helper")
 describe "AndroidApk" do
   subject { AndroidApk.analyze(apk_filepath) }
 
-  FIXTURE_DIR = File.join(File.dirname(__FILE__), "mock")
-  FIXTURE_DIR2 = File.join(File.dirname(__FILE__), "fixture")
+  FIXTURE_DIR = File.join(File.dirname(__FILE__), "fixture")
 
   shared_examples_for :analyzable do
     it "should exist" do
@@ -28,7 +27,7 @@ describe "AndroidApk" do
 
   context "if invalid sample apk files are given" do
     context "no such apk file" do
-      let(:apk_filepath) { File.join(FIXTURE_DIR, "no_such_file") }
+      let(:apk_filepath) { File.join(FIXTURE_DIR,  'other', "no_such_file") }
 
       it "should not exist" do
         expect(File.exist?(apk_filepath)).to be_falsey
@@ -40,7 +39,7 @@ describe "AndroidApk" do
     end
 
     context "not an apk file" do
-      let(:apk_filepath) { File.join(FIXTURE_DIR, "dummy.apk") }
+      let(:apk_filepath) { File.join(FIXTURE_DIR,  'other', "dummy.apk") }
 
       it "should exist" do
         expect(File.exist?(apk_filepath)).to be_truthy
@@ -52,7 +51,7 @@ describe "AndroidApk" do
     end
 
     context "multi_application_tag.apk which has multiple application tags" do
-      let(:apk_filepath) { File.join(FIXTURE_DIR, "multi_application_tag.apk") }
+      let(:apk_filepath) { File.join(FIXTURE_DIR,  'other', "multi_application_tag.apk") }
 
       it "should exist" do
         expect(File.exist?(apk_filepath)).to be_truthy
@@ -73,7 +72,7 @@ describe "AndroidApk" do
 
     %w(sample.apk sample\ with\ space.apk).each do |apk_name|
       context "#{apk_name} which is a very simple sample" do
-        let(:apk_filepath) { File.join(FIXTURE_DIR, apk_name) }
+        let(:apk_filepath) { File.join(FIXTURE_DIR,  'other', apk_name) }
 
         include_examples :analyzable
         include_examples :not_test_only
@@ -125,7 +124,7 @@ describe "AndroidApk" do
     end
 
     context "test-only.apk which has a testOnly flag" do
-      let(:apk_filepath) { File.join(FIXTURE_DIR, "test-only.apk") }
+      let(:apk_filepath) { File.join(FIXTURE_DIR,  'other', "test-only.apk") }
 
       include_examples :analyzable
 
@@ -152,7 +151,7 @@ describe "AndroidApk" do
 
     describe 'resource aware specs' do
       shared_examples_for :assert_resource do
-        let(:apk_filepath) { File.join(FIXTURE_DIR2, 'resource', apk_name) }
+        let(:apk_filepath) { File.join(FIXTURE_DIR, 'resource', apk_name) }
 
         include_examples :analyzable
 
@@ -203,7 +202,7 @@ describe "AndroidApk" do
         describe 'no icon' do
           let(:apk_name) { "no_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
-          let(:apk_filepath) { File.join(FIXTURE_DIR2, 'resource', apk_name) }
+          let(:apk_filepath) { File.join(FIXTURE_DIR, 'resource', apk_name) }
 
           include_examples :analyzable
 
@@ -368,7 +367,7 @@ describe "AndroidApk" do
 
     describe 'signature aware specs' do
       shared_examples_for :assert_signature do
-        let(:apk_filepath) { File.join(FIXTURE_DIR2, 'signature', apk_name) }
+        let(:apk_filepath) { File.join(FIXTURE_DIR, 'signature', apk_name) }
 
         include_examples :analyzable
 
@@ -394,7 +393,7 @@ describe "AndroidApk" do
       end
 
       context 'no signing' do
-        let(:apk_filepath) { File.join(FIXTURE_DIR2, 'signature', 'png_icon-assembleUnsigned-v1-true-v2-true-min-14.apk') }
+        let(:apk_filepath) { File.join(FIXTURE_DIR, 'signature', 'png_icon-assembleUnsigned-v1-true-v2-true-min-14.apk') }
 
         include_examples :analyzable
 

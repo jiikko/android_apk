@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
   spec.homepage = "https://github.com/DeployGate/android_apk"
   spec.license = "MIT"
 
-  spec.files = `git ls-files | grep -v 'spec/mock'`.split($/)
+  spec.files = `git ls-files | grep -v 'spec/fixture'`.split($/)
   spec.test_files = spec.files.grep(%r{^(test|spec)/})
   spec.require_paths = ["lib"]
 

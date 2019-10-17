@@ -5,7 +5,7 @@
 AllCops:
   Exclude:
     - 'vendor/**/*'
-    - 'spec/mock/**/*'
+    - 'spec/fixture/**/*'
     - 'tmp/**/*'
   TargetRubyVersion: 2.3.7
 
