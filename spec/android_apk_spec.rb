@@ -27,7 +27,7 @@ describe "AndroidApk" do
 
   context "if invalid sample apk files are given" do
     context "no such apk file" do
-      let(:apk_filepath) { File.join(FIXTURE_DIR,  'other', "no_such_file") }
+      let(:apk_filepath) { File.join(FIXTURE_DIR, "other", "no_such_file") }
 
       it "should not exist" do
         expect(File.exist?(apk_filepath)).to be_falsey
@@ -39,7 +39,7 @@ describe "AndroidApk" do
     end
 
     context "not an apk file" do
-      let(:apk_filepath) { File.join(FIXTURE_DIR,  'other', "dummy.apk") }
+      let(:apk_filepath) { File.join(FIXTURE_DIR, "other", "dummy.apk") }
 
       it "should exist" do
         expect(File.exist?(apk_filepath)).to be_truthy
@@ -51,7 +51,7 @@ describe "AndroidApk" do
     end
 
     context "multi_application_tag.apk which has multiple application tags" do
-      let(:apk_filepath) { File.join(FIXTURE_DIR,  'other', "multi_application_tag.apk") }
+      let(:apk_filepath) { File.join(FIXTURE_DIR, "other", "multi_application_tag.apk") }
 
       it "should exist" do
         expect(File.exist?(apk_filepath)).to be_truthy
@@ -72,7 +72,7 @@ describe "AndroidApk" do
 
     %w(sample.apk sample\ with\ space.apk).each do |apk_name|
       context "#{apk_name} which is a very simple sample" do
-        let(:apk_filepath) { File.join(FIXTURE_DIR,  'other', apk_name) }
+        let(:apk_filepath) { File.join(FIXTURE_DIR, "other", apk_name) }
 
         include_examples :analyzable
         include_examples :not_test_only
@@ -124,7 +124,7 @@ describe "AndroidApk" do
     end
 
     context "test-only.apk which has a testOnly flag" do
-      let(:apk_filepath) { File.join(FIXTURE_DIR,  'other', "test-only.apk") }
+      let(:apk_filepath) { File.join(FIXTURE_DIR, "other", "test-only.apk") }
 
       include_examples :analyzable
 
@@ -149,14 +149,14 @@ describe "AndroidApk" do
       end
     end
 
-    describe 'resource aware specs' do
+    describe "resource aware specs" do
       shared_examples_for :assert_resource do
-        let(:apk_filepath) { File.join(FIXTURE_DIR, 'resource', apk_name) }
+        let(:apk_filepath) { File.join(FIXTURE_DIR, "resource", apk_name) }
 
         include_examples :analyzable
 
         it "should have multiple icons for each dimensions" do
-          expect(subject.icons.length > 0).to be_truthy
+          expect(!subject.icons.empty?).to be_truthy
         end
 
         it "should have icon file" do
@@ -169,7 +169,7 @@ describe "AndroidApk" do
       end
 
       shared_examples_for :common_assert_resource do
-        describe 'png only icon' do
+        describe "png only icon" do
           let(:apk_name) { "png_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
           include_examples :assert_resource
@@ -183,7 +183,7 @@ describe "AndroidApk" do
           end
         end
 
-        describe 'png only icon in drawable directory' do
+        describe "png only icon in drawable directory" do
           let(:apk_name) { "png_icon_in_drawable_only-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
           include_examples :assert_resource
@@ -199,10 +199,10 @@ describe "AndroidApk" do
           end
         end
 
-        describe 'no icon' do
+        describe "no icon" do
           let(:apk_name) { "no_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
-          let(:apk_filepath) { File.join(FIXTURE_DIR, 'resource', apk_name) }
+          let(:apk_filepath) { File.join(FIXTURE_DIR, "resource", apk_name) }
 
           include_examples :analyzable
 
@@ -225,7 +225,7 @@ describe "AndroidApk" do
 
         include_examples :common_assert_resource
 
-        describe 'adaptive icon' do
+        describe "adaptive icon" do
           let(:apk_name) { "adaptive_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
           include_examples :assert_resource
@@ -237,9 +237,13 @@ describe "AndroidApk" do
           it "should be adaptive icon" do
             expect(subject.adaptive_icon?).to be_truthy
           end
+
+          it "should be backward compatible adaptive icon" do
+            expect(subject.backward_compatible_adaptive_icon?).to be_truthy
+          end
         end
 
-        describe 'misconfigured adaptive icon' do
+        describe "misconfigured adaptive icon" do
           let(:apk_name) { "misconfigured_adaptive_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
           include_examples :assert_resource
@@ -248,8 +252,12 @@ describe "AndroidApk" do
             expect(subject.icon_file(subject.icons.keys.max, true)).to be_nil
           end
 
-          it "should not be adaptive icon" do
-            expect(subject.adaptive_icon?).to be_falsey
+          it "should be adaptive icon" do
+            expect(subject.adaptive_icon?).to be_truthy
+          end
+
+          it "should not be backward compatible adaptive icon" do
+            expect(subject.backward_compatible_adaptive_icon?).to be_falsey
           end
         end
       end
@@ -259,7 +267,7 @@ describe "AndroidApk" do
 
         include_examples :common_assert_resource
 
-        describe 'vd only icon' do
+        describe "vd only icon" do
           let(:apk_name) { "vd_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
           include_examples :assert_resource
@@ -273,7 +281,7 @@ describe "AndroidApk" do
           end
         end
 
-        describe 'vd and png icon' do
+        describe "vd and png icon" do
           let(:apk_name) { "vd_and_png_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
           include_examples :assert_resource
@@ -287,7 +295,7 @@ describe "AndroidApk" do
           end
         end
 
-        describe 'adaptive icon' do
+        describe "adaptive icon" do
           let(:apk_name) { "adaptive_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
           include_examples :assert_resource
@@ -299,9 +307,13 @@ describe "AndroidApk" do
           it "should be adaptive icon" do
             expect(subject.adaptive_icon?).to be_truthy
           end
+
+          it "should be backward compatible adaptive icon" do
+            expect(subject.backward_compatible_adaptive_icon?).to be_truthy
+          end
         end
 
-        describe 'misconfigured adaptive icon' do
+        describe "misconfigured adaptive icon" do
           let(:apk_name) { "misconfigured_adaptive_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
           include_examples :assert_resource
@@ -310,8 +322,12 @@ describe "AndroidApk" do
             expect(subject.icon_file(subject.icons.keys.max, true)).to be_nil
           end
 
-          it "should not be adaptive icon" do
-            expect(subject.adaptive_icon?).to be_falsey
+          it "should be adaptive icon" do
+            expect(subject.adaptive_icon?).to be_truthy
+          end
+
+          it "should not be backward compatible adaptive icon" do
+            expect(subject.backward_compatible_adaptive_icon?).to be_falsey
           end
         end
       end
@@ -321,7 +337,7 @@ describe "AndroidApk" do
 
         include_examples :common_assert_resource
 
-        describe 'vd and png icon' do
+        describe "vd and png icon" do
           let(:apk_name) { "vd_and_png_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
           include_examples :assert_resource
@@ -335,7 +351,7 @@ describe "AndroidApk" do
           end
         end
 
-        describe 'adaptive icon' do
+        describe "adaptive icon" do
           let(:apk_name) { "adaptive_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
           include_examples :assert_resource
@@ -347,9 +363,13 @@ describe "AndroidApk" do
           it "should be adaptive icon" do
             expect(subject.adaptive_icon?).to be_truthy
           end
+
+          it "should be backward compatible adaptive icon" do
+            expect(subject.backward_compatible_adaptive_icon?).to be_falsey
+          end
         end
 
-        describe 'misconfigured adaptive icon' do
+        describe "misconfigured adaptive icon" do
           let(:apk_name) { "misconfigured_adaptive_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
           include_examples :assert_resource
@@ -361,13 +381,17 @@ describe "AndroidApk" do
           it "should be adaptive icon" do
             expect(subject.adaptive_icon?).to be_truthy
           end
+
+          it "should not be backward compatible adaptive icon" do
+            expect(subject.backward_compatible_adaptive_icon?).to be_falsey
+          end
         end
       end
     end
 
-    describe 'signature aware specs' do
+    describe "signature aware specs" do
       shared_examples_for :assert_signature do
-        let(:apk_filepath) { File.join(FIXTURE_DIR, 'signature', apk_name) }
+        let(:apk_filepath) { File.join(FIXTURE_DIR, "signature", apk_name) }
 
         include_examples :analyzable
 
@@ -392,8 +416,8 @@ describe "AndroidApk" do
         end
       end
 
-      context 'no signing' do
-        let(:apk_filepath) { File.join(FIXTURE_DIR, 'signature', 'png_icon-assembleUnsigned-v1-true-v2-true-min-14.apk') }
+      context "no signing" do
+        let(:apk_filepath) { File.join(FIXTURE_DIR, "signature", "png_icon-assembleUnsigned-v1-true-v2-true-min-14.apk") }
 
         include_examples :analyzable
 
@@ -414,25 +438,25 @@ describe "AndroidApk" do
         end
       end
 
-      context 'rsa signing' do
+      context "rsa signing" do
         let(:signature) { "4ad4e4376face4e441a3b8802363a7f6c6b458ab" }
 
         context "min sdk is equal or greater than v2 scheme supported sdk" do
-          let(:min_sdk) { '24' }
+          let(:min_sdk) { "24" }
 
-          context 'v1 and v2 schemes' do
+          context "v1 and v2 schemes" do
             let(:apk_name) { "png_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
             include_examples :assert_signature
           end
 
-          context 'v1 only' do
+          context "v1 only" do
             let(:apk_name) { "png_icon-assembleRsa-v1-true-v2-false-min-#{min_sdk}.apk" }
 
             include_examples :assert_signature
           end
 
-          context 'v2 only' do
+          context "v2 only" do
             let(:apk_name) { "png_icon-assembleRsa-v1-false-v2-true-min-#{min_sdk}.apk" }
 
             include_examples :assert_signature
@@ -440,21 +464,21 @@ describe "AndroidApk" do
         end
 
         context "min sdk is less than v2 scheme supported sdk" do
-          let(:min_sdk) { '14' }
+          let(:min_sdk) { "14" }
 
-          context 'v1 and v2 schemes' do
+          context "v1 and v2 schemes" do
             let(:apk_name) { "png_icon-assembleRsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
             include_examples :assert_signature
           end
 
-          context 'v1 only' do
+          context "v1 only" do
             let(:apk_name) { "png_icon-assembleRsa-v1-true-v2-false-min-#{min_sdk}.apk" }
 
             include_examples :assert_signature
           end
 
-          context 'v2 only' do
+          context "v2 only" do
             let(:apk_name) { "png_icon-assembleRsa-v1-false-v2-true-min-#{min_sdk}.apk" }
 
             include_examples :assert_signature
@@ -462,25 +486,25 @@ describe "AndroidApk" do
         end
       end
 
-      context 'dsa signing' do
+      context "dsa signing" do
         let(:signature) { "6a2dd3e16a3f05fc219f914734374065985273b3" }
 
         context "min sdk is equal or greater than v2 scheme supported sdk" do
-          let(:min_sdk) { '24' }
+          let(:min_sdk) { "24" }
 
-          context 'v1 and v2 schemes' do
+          context "v1 and v2 schemes" do
             let(:apk_name) { "png_icon-assembleDsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
             include_examples :assert_signature
           end
 
-          context 'v1 only' do
+          context "v1 only" do
             let(:apk_name) { "png_icon-assembleDsa-v1-true-v2-false-min-#{min_sdk}.apk" }
 
             include_examples :assert_signature
           end
 
-          context 'v2 only' do
+          context "v2 only" do
             let(:apk_name) { "png_icon-assembleDsa-v1-false-v2-true-min-#{min_sdk}.apk" }
 
             include_examples :assert_signature
@@ -488,21 +512,21 @@ describe "AndroidApk" do
         end
 
         context "min sdk is less than v2 scheme supported sdk" do
-          let(:min_sdk) { '14' }
+          let(:min_sdk) { "14" }
 
-          context 'v1 and v2 schemes' do
+          context "v1 and v2 schemes" do
             let(:apk_name) { "png_icon-assembleDsa-v1-true-v2-true-min-#{min_sdk}.apk" }
 
             include_examples :assert_signature
           end
 
-          context 'v1 only' do
+          context "v1 only" do
             let(:apk_name) { "png_icon-assembleDsa-v1-true-v2-false-min-#{min_sdk}.apk" }
 
             include_examples :assert_signature
           end
 
-          context 'v2 only' do
+          context "v2 only" do
             let(:apk_name) { "png_icon-assembleDsa-v1-false-v2-true-min-#{min_sdk}.apk" }
 
             include_examples :assert_signature
