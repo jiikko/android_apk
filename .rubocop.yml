@@ -5,7 +5,7 @@
 AllCops:
   Exclude:
     - 'vendor/**/*'
-    - 'spec/mock/**/*'
+    - 'spec/fixture/**/*'
     - 'tmp/**/*'
   TargetRubyVersion: 2.3.7
 
@@ -136,7 +136,7 @@ Metrics/BlockLength:
 Style/MixinGrouping:
   Enabled: false
 
-Style/FileName:
+Naming/FileName:
   Enabled: false
 
 Layout/IndentHeredoc:

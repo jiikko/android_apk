@@ -7,6 +7,8 @@ require "tmpdir"
 require "zip"
 
 class AndroidApk
+  ADAPTIVE_ICON_SDK = 26
+
   # Dump result which was parsed manually
   # @return [Hash] Return a parsed result of aapt dump
   attr_accessor :results
@@ -42,6 +44,7 @@ class AndroidApk
   # Min sdk version of this apk
   # @return [String] Return Integer string which is defined in AndroidManifest.xml
   attr_accessor :sdk_version
+  alias min_sdk_version sdk_version
 
   # Target sdk version of this apk
   # @return [String] Return Integer string which is defined in AndroidManifest.xml
@@ -55,6 +58,11 @@ class AndroidApk
   # @return [Boolean] Return true if this apk has an adaptive icon, otherwise false.
   attr_accessor :adaptive_icon
   alias adaptive_icon? adaptive_icon
+
+  # Check whether or not this apk's icon is a backward-compatible adaptive icon for lower sdk
+  # @return [Boolean] Return true if this apk is targeting to 25 or less sdk version and has an adaptive icon and a fallback icon, otherwise false.
+  attr_accessor :backward_compatible_adaptive_icon
+  alias backward_compatible_adaptive_icon? backward_compatible_adaptive_icon
 
   # Check whether or not this apk is verified
   # @return [Boolean] Return true if this apk is verified, otherwise false.
@@ -329,11 +337,20 @@ class AndroidApk
   end
 
   def self.read_adaptive_icon(apk, filepath)
-    if apk.icon.end_with?(".xml") && apk.icon.start_with?("res/mipmap-anydpi-v26/")
+    return unless apk.icon.end_with?(".xml") && apk.icon.start_with?("res/mipmap-anydpi-v26/")
+
+    # invalid xml file may throw an error
+    apk.adaptive_icon = File.open(apk.icon) do |f|
+      f.each_line.any? { |l| l.include?("adaptive-icon") }
+    end
+  rescue StandardError => _e
+    apk.adaptive_icon = false # ensure
+  ensure
+    if apk.sdk_version.to_i < ADAPTIVE_ICON_SDK && apk.adaptive_icon
       adaptive_icon_path = "res/mipmap-xxxhdpi-v4/#{File.basename(apk.icon).gsub(/\.xml\Z/, '.png')}"
 
       Zip::File.open(filepath) do |zip_file|
-        apk.adaptive_icon = !zip_file.find_entry(adaptive_icon_path).nil?
+        apk.backward_compatible_adaptive_icon = !zip_file.find_entry(adaptive_icon_path).nil?
       end
     end
   end
