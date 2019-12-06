@@ -340,8 +340,8 @@ class AndroidApk
     return unless apk.icon.end_with?(".xml") && apk.icon.start_with?("res/mipmap-anydpi-v26/")
 
     # invalid xml file may throw an error
-    apk.adaptive_icon = File.open(apk.icon) do |f|
-      f.each_line.any? { |l| l.include?("adaptive-icon") }
+    apk.adaptive_icon = !!Zip::File.open(filepath) do |zip_file|
+      zip_file.find_entry(apk.icon)&.get_input_stream&.read&.include?("adaptive-icon")
     end
   rescue StandardError => _e
     apk.adaptive_icon = false # ensure
