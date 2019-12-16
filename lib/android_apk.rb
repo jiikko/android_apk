@@ -158,19 +158,26 @@ class AndroidApk
     icon = dpi ? self.icons[dpi.to_i] : self.icon
     return nil if icon.nil? || icon.empty?
 
+    # Unfroze just in case
+    icon = +icon
+    dpis = dpi_str(dpi)
+
+    # neat adaptive icon apk
     if want_png && icon.end_with?(".xml")
-      dpis = dpi_str(dpi)
-      icon.gsub! %r{res/(drawable|mipmap)-anydpi-(?:v\d+)/([^/]+)\.xml}, "res/\\1-#{dpis}-v4/\\2.png"
+      icon.gsub!(%r{res/(drawable|mipmap)-anydpi-(?:v\d+)/([^/]+)\.xml}, "res/\\1-#{dpis}-v4/\\2.png")
     end
 
-    # a fallback to a png file which is manually resolved
+    # 1st fallback is for WEIRD adaptive icon apk e.g. Cordiva generates such apks
     if want_png && icon.end_with?(".xml")
-      dpis = dpi_str(dpi)
-      icon.gsub! %r{res/(drawable|mipmap)/([^/]+)\.xml}, "res/\\1-#{dpis}-v4/\\2.png"
+      icon.gsub!(%r{res/(drawable|mipmap)-.+?dpi-(?:v\d+)/([^/]+)\.xml}, "res/\\1-#{dpis}-v4/\\2.png")
+    end
+
+    # 2nd fallback is for vector drawable icon apk. Use a png file which is manually resolved
+    if want_png && icon.end_with?(".xml")
+      icon.gsub!(%r{res/(drawable|mipmap)/([^/]+)\.xml}, "res/\\1-#{dpis}-v4/\\2.png")
     end
 
     # we cannot prepare for any fallbacks but don't return nil for now to keep the behavior
-    # if want_png && icon.end_with?(".xml")
 
     Dir.mktmpdir do |dir|
       output_to = File.join(dir, icon)
