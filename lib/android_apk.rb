@@ -79,7 +79,11 @@ class AndroidApk
   # @return [String] Return a file path of this apk file
   attr_accessor :filepath
 
-  NOT_ALLOW_DUPLICATE_TAG_NAMES = %w(application).freeze
+  NOT_ALLOW_DUPLICATE_TAG_NAMES = %w(
+    application
+    sdkVersion
+    targetSdkVersion
+  ).freeze
 
   DPI_TO_NAME_MAP = {
     120 => "ldpi",
@@ -104,7 +108,7 @@ class AndroidApk
   # Do analyze the given apk file. Analyzed apk does not mean *valid*.
   #
   # @param [String] filepath a filepath of an apk to be analyzed
-  # @raise [AndroidManifestValidateError] if AndroidManifest.xml has multiple application tags.
+  # @raise [AndroidManifestValidateError] if AndroidManifest.xml has multiple application, sdkVersion tags.
   # @return [AndroidApk, nil] An instance of AndroidApk will be returned if no problem exists while analyzing. Otherwise nil.
   def self.analyze(filepath)
     return nil unless File.exist?(filepath)

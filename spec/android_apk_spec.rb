@@ -25,6 +25,13 @@ describe "AndroidApk" do
     end
   end
 
+  context "if duplicated sdk_version apk are given" do
+    let(:apk_filepath) { File.join(FIXTURE_DIR, "other", "duplicate_sdk_version.apk") }
+    it "should raise error" do
+      expect { subject }.to raise_error(AndroidApk::AndroidManifestValidateError, /Duplication of sdkVersion tag is not allowed/)
+    end
+  end
+
   context "if invalid sample apk files are given" do
     context "no such apk file" do
       let(:apk_filepath) { File.join(FIXTURE_DIR, "other", "no_such_file") }
